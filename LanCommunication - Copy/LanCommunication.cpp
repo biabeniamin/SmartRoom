@@ -1,5 +1,5 @@
 #include "LanCommunication.h"
-//#define DO_DEBUG
+#define DO_DEBUG
 
 int _verificationBytes[VERIFICATION_BYTE_COUNT] = { 9, 5, 6, 8 };
 
@@ -72,7 +72,7 @@ void LanCommunication::SendCommand(int bytes[COMMUNICATION_BYTE_COUNT])
 }
 void LanCommunication::SendByte(int toAddress, int byte)
 {
-	int bytes[COMMUNICATION_BYTE_COUNT] = { _address,toAddress,byte };
+	int bytes[COMMUNICATION_BYTE_COUNT] = { toAddress,_address,byte };
 	SendCommand(bytes);
 }
 void LanCommunication::SendOlderVersionByte(int address, int byte)
