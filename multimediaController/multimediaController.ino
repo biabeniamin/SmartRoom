@@ -48,6 +48,7 @@ decode_results results;
 void writeLan(int byte)
 {
   mySerial.write(byte);
+  Serial.write(byte);
 }
 int readLan()
 {
@@ -57,7 +58,7 @@ int countLan()
 {
   return mySerial.available();
 }
-LanCommunication lanCom(TRIGGERED_PIN, &writeLan, &readLan, &countLan);
+LanCommunication lanCom(ADDRESS,TRIGGERED_PIN, &writeLan, &readLan, &countLan);
 Room room(&lanCom);
 
 void setupEncj()
@@ -94,15 +95,6 @@ void changeLightMode(int mode)
   x[3] = 0;
   lanCom.SendCommand(x);
 }
-void turnOnLight(int seconds)
-{
-  int x[4];
-  x[0] = 2;
-  x[1] = 3;
-  x[2] = seconds;
-  x[3] = 1;
-  lanCom.SendCommand(x);
-}
 void lockComputer()
 {
   Keyboard.begin();
@@ -110,6 +102,7 @@ void lockComputer()
   Keyboard.print("l");
   Keyboard.releaseAll();
 }
+/*
 void checkEncj()
 {
   word pos = ether.packetLoop(ether.packetReceive());
@@ -125,16 +118,16 @@ void checkEncj()
         switch (i)
         {
         case 1:
-          switchLight();
+          room.SwitchLight();
           break;
         case 2:
-          turnOffLight();
+          room.TurnOffLight();
           break;
         case 3:
-          closeDoor();
+          room.CloseDoor();
           break;
         case 4:
-          openDoor();
+          room.OpenDoor();
           break;
         case 5:
           changeLightMode(0);
@@ -152,7 +145,7 @@ void checkEncj()
     memcpy_P(ether.tcpOffset(), page, sizeof page);
     ether.httpServerReply(sizeof page - 1);
   }
-}
+}*/
 void loop() {
   //checkEncj();
   if (irrecv.decode(&results))
@@ -181,58 +174,58 @@ void loop() {
       Remote.pause();
       break;
     case 1162296347:
-      closeDoor();
+      room.CloseDoor();
       break;
     case 2327013275:
-      openDoor();
+      room.OpenDoor();
       break;
     case 3691091931:
-      openCurtains();
+      room.OpenCurtains();
       break;
     case 1153697755:
-      closeCurtains();
+      room.CloseCurtains();
       break;
     case 4034314555:
-      stopCurtains();
+      room.StopCurtains();
       break;
     case 2980520219:
-      turnOnLight();
+      room.TurnOnLight();
       break;
     case 3961599383:
-      turnOffLight();
+      room.TurnOffLight();
       break;
     case 1217346747:
-      switchLight();
+      room.SwitchLight();
       break;
     case 3577243675:
       lockComputer();
       break;
     case 3855596927:
-      turnOnLight(1);
+      room.TurnOnLightOnSeconds(1);
       break;
     case 2721879231:
-      turnOnLight(2);
+      room.TurnOnLightOnSeconds(2);
       break;
     case 3877748955:
-      turnOnLight(3);
+      room.TurnOnLightOnSeconds(3);
       break;
     case 4039382595:
-      turnOnLight(4);
+      room.TurnOnLightOnSeconds(4);
       break;
     case 2538093563:
-      turnOnLight(5);
+      room.TurnOnLightOnSeconds(5);
       break;
     case 2259740311:
-      turnOnLight(6);
+      room.TurnOnLightOnSeconds(6);
       break;
     case 2666828831:
-      turnOnLight(7);
+      room.TurnOnLightOnSeconds(7);
       break;
     case 2747854299:
-      turnOnLight(8);
+      room.TurnOnLightOnSeconds(8);
       break;
     case 1541889663:
-      turnOnLight(9);
+      room.TurnOnLightOnSeconds(9);
       break;
     case 4287727287:
       showNotification(5);

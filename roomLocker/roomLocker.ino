@@ -1,23 +1,19 @@
 #include <Wire.h>
 #include <SoftwareSerial.h>
+#include <Room.h>
+#include <LanCommunication.h>
 
 #define COLS 3
 #define ROWS 4
 #define PWM_LOCKER 200
 #define ADDRESS 3
+#define TRIGGERED_PIN 2
 
 typedef enum
 {
   OPEN = 0,
   CLOSE = 1
 } MOTORSTATUS;
-
-typedef enum
-{
-  DOOR_OPEN = 0,
-  DOOR_CLOSE = 1,
-  PIN_ENTERED_INCORRECTLY = 2
-} LOG_TYPE;
 
 int lockerPin1 = 5;
 int lockerPin2 = 6;
@@ -32,7 +28,6 @@ int adminPin[] = {6, 6, 9, 8};
 int y[] = {9, 5, 6, 8};
 bool isAdminLoggedIn = false;
 int insertedPin[4];
-int triggerPin = 2;
 int speakerPin = 14;
 int countInsertedPin = 0;
 unsigned long now, last, interval;
@@ -43,6 +38,22 @@ MOTORSTATUS motorState = OPEN;
 bool isTimerOn = false;
 SoftwareSerial mySerial(0, 1);
 //SoftwareSerial mySerial2(11, 13);
+
+void writeLan(int byte)
+{
+  mySerial.write(byte);
+}
+int readLan()
+{
+  return mySerial.read();
+}
+int countLan()
+{
+  return mySerial.available();
+}
+
+LanCommunication lanCom(ADDRESS, TRIGGERED_PIN, &writeLan, &readLan, &countLan);
+Room room(&lanCom);
 
 void setTimer(int action, int duration)
 {
@@ -57,7 +68,7 @@ void LockDoor(int source)
   analogWrite(lockerPin2, PWM_LOCKER);
   setTimer(0, 1000);
   motorState = CLOSE;
-  sendLog(DOOR_CLOSE, source);
+  room.SendLog(DOOR_CLOSE, source);
 }
 void StopMotor()
 {
@@ -70,7 +81,7 @@ void UnlockDoor(int source)
   digitalWrite(lockerPin2, LOW);
   setTimer(0, 1000);
   motorState = OPEN;
-  sendLog(DOOR_OPEN, source);
+  room.SendLog(DOOR_OPEN, source);
 }
 void SwitchDoor(int source)
 {
@@ -150,8 +161,6 @@ void setup()
   //Serial.begin(9600);
   //mySerial2.begin(9600);
   Wire.onReceive(i2cReceiveEvent);
-  pinMode(triggerPin, OUTPUT);
-  digitalWrite(triggerPin, LOW);
   pinMode(unlockerButtonPin, INPUT_PULLUP);
   pinMode(lockerButtonPin, INPUT_PULLUP);
 
@@ -168,15 +177,6 @@ void setup()
   pinMode(lockerPin1, OUTPUT);
   pinMode(lockerPin2, OUTPUT);
   pinMode(speakerPin, OUTPUT);
-}
-void turnOnLight(int interval, int times)
-{
-  int x[4];
-  x[0] = 2;
-  x[1] = 3;
-  x[2] = interval;
-  x[3] = times;
-  sendCommandViaMax(x);
 }
 int checkAdminPin()
 {
@@ -223,7 +223,7 @@ void checkPin()
     //check if pin was correctly
     if (checkAdminPin())
     {
-      sendLog(PIN_ENTERED_INCORRECTLY, ADDRESS);
+      room.SendLog(PIN_ENTERED_INCORRECTLY, ADDRESS);
     }
   }
   countInsertedPin = 0;
@@ -241,92 +241,20 @@ void sendCommandViaI2c(int address, int command)
   Wire.write(command);
   Wire.endTransmission();
 }
-void sendCommandViaMax(int bytes[])
-{
-  digitalWrite(triggerPin, HIGH);
-  delay(1);
-  mySerial.write(9 + 48);
-  mySerial.write(5 + 48);
-  mySerial.write(6 + 48);
-  mySerial.write(8 + 48);
-  //mySerial.write(48+bytes[1]);
-  for (int i = 0; i < 4; ++i)
-  {
-    mySerial.write(48 + bytes[i]);
-  }
-  digitalWrite(triggerPin, LOW);
-  delay(1);
-}
-void sendOneByteViaMax(int address, int byte)
-{
-  int x[4];
-  x[0] = address;
-  x[1] = byte;
-  x[2] = 0;
-  x[3] = 0;
-  sendCommandViaMax(x);
-}
-void sendLog(LOG_TYPE value, int source)
-{
-  int x[4];
-  x[0] = 4;
-  x[1] = ADDRESS;
-  x[2] = value;
-  x[3] = source;
-  sendCommandViaMax(x);
-}
-void turnOnLight()
-{
-  sendOneByteViaMax(2, 1);
-}
-void turnOffLight()
-{
-  sendOneByteViaMax(2, 0);
-}
-void switchLight()
-{
-  sendOneByteViaMax(2, 2);
-}
-void multimediaPlay()
-{
-  sendOneByteViaMax(0, 1);
-}
-void multimediaPause()
-{
-  sendOneByteViaMax(0, 2);
-}
-void multimediaNext()
-{
-  sendOneByteViaMax(0, 3);
-}
-void multimediaPrevious()
-{
-  sendOneByteViaMax(0, 4);
-}
-void multimediaVolumeUp()
-{
-  sendOneByteViaMax(0, 5);
-}
-void multimediaVolumeDown()
-{
-  sendOneByteViaMax(0, 6);
-}
-void multimediaLockComputer()
-{
-  sendOneByteViaMax(0, 7);
-}
+
+
 void tastapushedAdmin(int tasta)
 {
   switch (tasta)
   {
     case 1:
-      turnOnLight();
+      room.TurnOnLight();
       break;
     case 2:
-      turnOffLight();
+      room.TurnOffLight();
       break;
     case 3:
-      switchLight();
+      room.SwitchLight();
       break;
     case 4:
       UnlockDoor(ADDRESS);
@@ -335,25 +263,25 @@ void tastapushedAdmin(int tasta)
       LockDoor(ADDRESS);
       break;
     case 8:
-      multimediaPlay();
+      room.PlayMultimedia();
       break;
     case 7:
-      multimediaPause();
+      room.PauseMultimedia();
       break;
     case 0:
-      multimediaNext();
+      room.NextMultimedia();
       break;
     case 6:
-      multimediaVolumeUp();
+      room.VolumeUpMultimedia();
       break;
     case 9:
-      multimediaVolumeDown();
+      room.VolumeDownMultimedia();
       break;
     case 10:
-      multimediaPrevious();
+      room.PreviousMultimedia();
       break;
     case 12:
-      multimediaLockComputer();
+      room.LockMultimedia();
       isAdminLoggedIn = false;
       break;
   }
@@ -362,47 +290,27 @@ void tastapushedAdmin(int tasta)
 int x[4];
 void checkSerial()
 {
-  if (mySerial.available() > 7)
+  if (lanCom.ReadCommand())
   {
-    while (mySerial.available())
+    int *command = lanCom.GetLastCommand();
+    //raspberry pi needs time to recover in order to log 
+    delay(100);
+    switch (command[2])
     {
-      for (int i = 0; i < 3; ++i)
-      {
-        x[i] = x[i + 1];
-      }
-      x[3] = mySerial.read() - 48;
-      bool isOk = true;
-      for (int i = 0; i < 4; ++i)
-      {
-        if (x[i] != y[i])
-        {
-          isOk = false;
-        }
-      }
-      if (isOk)
-      {
-        for (int i = 0; i < 4; ++i)
-        {
-          x[i] = mySerial.read() - 48;
-        }
-        if (x[0] == ADDRESS)
-        {
-          switch (x[1])
-          {
-            case 0:
-              LockDoor(1);
-              break;
-            case 1:
-              UnlockDoor(1);
-              break;
-            case 2:
-              SwitchDoor(1);
-              break;
-          }
-        }
-      }
+      case 0:
+        LockDoor(command[1]);
+        break;
+      case 1:
+        UnlockDoor(command[1]);
+        break;
+      case 2:
+        SwitchDoor(command[1]);
+        break;
+
     }
   }
+
+
 }
 int getPressedTasta()
 {
@@ -451,7 +359,7 @@ void loop()
       }
       else if (tasta == 10)
       {
-        turnOnLight(100, 50);
+        room.TurnOnLightOnSeconds(5);
         delay(300);
       }
       else
