@@ -1,12 +1,23 @@
+//multimedia module
+#define ADDRESS 0
+#define TRIGGERED_PIN 9
+
+#include <Room.h>
+#include <LanCommunication.h>
+
 #include <SoftwareSerial.h>
 #include <IRremote.h>
 #include <EtherCard.h>
-static byte myip[] = { 
-  192, 168, 0, 108 };
-static byte gwip[] = { 
-  192, 168, 0, 1 };
-static byte mymac[] = { 
-  0x74, 0x69, 0x69, 0x2D, 0x30, 0x31 };
+
+static byte myip[] = {
+  192, 168, 0, 108
+};
+static byte gwip[] = {
+  192, 168, 0, 1
+};
+static byte mymac[] = {
+  0x74, 0x69, 0x69, 0x2D, 0x30, 0x31
+};
 byte Ethernet::buffer[1000];
 const char page[] PROGMEM =
 "<html>"
@@ -29,10 +40,26 @@ const char page[] PROGMEM =
 ;
 
 int RECV_PIN = 5;
-int triggerPin=9;
+int triggerPin = 9;
 SoftwareSerial mySerial(10, 11);
 IRrecv irrecv(RECV_PIN);
 decode_results results;
+
+void writeLan(int byte)
+{
+  mySerial.write(byte);
+}
+int readLan()
+{
+  return mySerial.read();
+}
+int countLan()
+{
+  return mySerial.available();
+}
+LanCommunication lanCom(TRIGGERED_PIN, &writeLan, &readLan, &countLan);
+Room room(&lanCom);
+
 void setupEncj()
 {
   if (ether.begin(sizeof Ethernet::buffer, mymac, A0) == 0)
@@ -42,88 +69,39 @@ void setupEncj()
 void setup()
 {
   Serial.begin(9600);
-  setupEncj();
+  //setupEncj();
   irrecv.enableIRIn();
   mySerial.begin(9600);
-  pinMode(triggerPin,OUTPUT);
-  digitalWrite(triggerPin,LOW);
+  pinMode(triggerPin, OUTPUT);
+  digitalWrite(triggerPin, LOW);
 
-}
-void sendCommandViaMax(int bytes[])
-{
-  digitalWrite(triggerPin,HIGH);
-  delay(1);
-  mySerial.write(9+48);
-  mySerial.write(5+48);
-  mySerial.write(6+48);
-  mySerial.write(8+48);
-  //mySerial.write(48+bytes[1]);
-  for(int i=0;i<4;++i)
-  {
-    mySerial.write(48+bytes[i]);
-    Serial.print("    ");
-    Serial.print(bytes[i]);
-    Serial.print("    ");
-  }
-  Serial.println("    ");
-  digitalWrite(triggerPin,LOW);
-  delay(1);
-}
-void sendOneByteViaMax(int address,int byte)
-{
-  int x[4];
-  x[0]=address;
-  x[1]=byte;
-  x[2]=0;
-  x[3]=0;
-  sendCommandViaMax(x);
-}
-void closeDoor()
-{
-  sendOneByteViaMax(1,0);
-}
-void openDoor()
-{
-  sendOneByteViaMax(1,1);
-}
-void turnOnLight()
-{
-  sendOneByteViaMax(2,1);
-}
-void turnOffLight()
-{
-  sendOneByteViaMax(2,0);
-}
-void switchLight()
-{
-  sendOneByteViaMax(2,2);
 }
 void showNotification(int count)
 {
   int x[4];
-  x[0]=3;
-  x[1]=1;
-  x[2]=count;
-  x[3]=0;
-  sendCommandViaMax(x);
+  x[0] = 3;
+  x[1] = 1;
+  x[2] = count;
+  x[3] = 0;
+  lanCom.SendCommand(x);
 }
 void changeLightMode(int mode)
 {
   int x[4];
-  x[0]=3;
-  x[1]=0;
-  x[2]=mode;
-  x[3]=0;
-  sendCommandViaMax(x);
+  x[0] = 3;
+  x[1] = 0;
+  x[2] = mode;
+  x[3] = 0;
+  lanCom.SendCommand(x);
 }
 void turnOnLight(int seconds)
 {
   int x[4];
-  x[0]=2;
-  x[1]=3;
-  x[2]=seconds;
-  x[3]=1;
-  sendCommandViaMax(x);
+  x[0] = 2;
+  x[1] = 3;
+  x[2] = seconds;
+  x[3] = 1;
+  lanCom.SendCommand(x);
 }
 void lockComputer()
 {
@@ -144,7 +122,7 @@ void checkEncj()
       request[10] = i + 48;
       if (strncmp(request, data, strlen(request)) == 0)
       {
-        switch(i)
+        switch (i)
         {
         case 1:
           switchLight();
@@ -176,10 +154,10 @@ void checkEncj()
   }
 }
 void loop() {
-  checkEncj();
-  if (irrecv.decode(&results)) 
+  //checkEncj();
+  if (irrecv.decode(&results))
   {
-    switch(results.value)
+    switch (results.value)
     {
     case 2878444831:
       Remote.increase();
@@ -208,13 +186,22 @@ void loop() {
     case 2327013275:
       openDoor();
       break;
+    case 3691091931:
+      openCurtains();
+      break;
+    case 1153697755:
+      closeCurtains();
+      break;
+    case 4034314555:
+      stopCurtains();
+      break;
     case 2980520219:
       turnOnLight();
       break;
     case 3961599383:
       turnOffLight();
       break;
-    case 324312031:
+    case 1217346747:
       switchLight();
       break;
     case 3577243675:
@@ -249,13 +236,13 @@ void loop() {
       break;
     case 4287727287:
       showNotification(5);
-      break; 
+      break;
     case 3109255487:
       changeLightMode(1);
-      break; 
+      break;
     case 1337545183:
       changeLightMode(0);
-      break;      
+      break;
     }
     Serial.println(results.value);
     irrecv.resume(); // Receive the next value
@@ -264,7 +251,7 @@ void loop() {
 }
 void remoteCommand(int command)
 {
-  switch(command)
+  switch (command)
   {
     //case 6:lockComputer();break;
   case 2:
@@ -298,6 +285,7 @@ void receiveEventI2c(int howMany)
   //int x=Wire.read();
   //remoteCommand(x);
 }
+
 
 
 
