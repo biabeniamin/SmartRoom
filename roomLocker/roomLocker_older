@@ -3,21 +3,6 @@
 
 #define COLS 3
 #define ROWS 4
-#define PWM_LOCKER 200
-#define ADDRESS 3
-
-typedef enum
-{
-  OPEN = 0,
-  CLOSE = 1
-} MOTORSTATUS;
-
-typedef enum
-{
-  DOOR_OPEN = 0,
-  DOOR_CLOSE = 1,
-  PIN_ENTERED_INCORRECTLY = 2
-} LOG_TYPE;
 
 int lockerPin1 = 5;
 int lockerPin2 = 6;
@@ -25,8 +10,8 @@ int unlockerButtonPin = 15;
 int lockerButtonPin = 16;
 bool looked = false;
 int countKeyboardPin = 0;
-int keyboardColPins[] = {10, 11, 12}; //11,10,9
-int keyboardRowPins[] = {7, 13, 8, 9};
+int keyboardColPins[] = {9,11,12}; //11,10,9
+int keyboardRowPins[] = {7,13,8,10};
 int pin[] = {4, 4, 1, 2};
 int adminPin[] = {6, 6, 9, 8};
 int y[] = {9, 5, 6, 8};
@@ -37,9 +22,6 @@ int speakerPin = 14;
 int countInsertedPin = 0;
 unsigned long now, last, interval;
 int timerAction;
-
-MOTORSTATUS motorState = OPEN;
-
 bool isTimerOn = false;
 SoftwareSerial mySerial(0, 1);
 //SoftwareSerial mySerial2(11, 13);
@@ -51,37 +33,22 @@ void setTimer(int action, int duration)
   last = now;
   interval = duration;
 }
-void LockDoor(int source)
+void LockDoor()
 {
   digitalWrite(lockerPin1, LOW);
-  analogWrite(lockerPin2, PWM_LOCKER);
+  digitalWrite(lockerPin2, HIGH);
   setTimer(0, 1000);
-  motorState = CLOSE;
-  sendLog(DOOR_CLOSE, source);
 }
 void StopMotor()
 {
   digitalWrite(lockerPin1, LOW);
   digitalWrite(lockerPin2, LOW);
 }
-void UnlockDoor(int source)
+void UnlockDoor()
 {
-  analogWrite(lockerPin1, PWM_LOCKER);
+  digitalWrite(lockerPin1, HIGH);
   digitalWrite(lockerPin2, LOW);
   setTimer(0, 1000);
-  motorState = OPEN;
-  sendLog(DOOR_OPEN, source);
-}
-void SwitchDoor(int source)
-{
-  if (OPEN == motorState)
-  {
-    LockDoor(source);
-  }
-  else if (CLOSE == motorState)
-  {
-    UnlockDoor(source);
-  }
 }
 void beep()
 {
@@ -111,7 +78,7 @@ int  getLinie(int pin)
 {
   for (int i = 0; i < ROWS; ++i)
   {
-    if (keyboardRowPins[i] == pin)
+    if (keyboardRowPins[pin] == pin)
     {
       return i + 1;
     }
@@ -122,7 +89,7 @@ int  getColoana(int pin)
 {
   for (int i = 0; i < COLS; ++i)
   {
-    if (keyboardColPins[i] == pin)
+    if (keyboardColPins[pin] == pin)
     {
       return i + 1;
     }
@@ -178,7 +145,7 @@ void turnOnLight(int interval, int times)
   x[3] = times;
   sendCommandViaMax(x);
 }
-int checkAdminPin()
+void checkAdminPin()
 {
   bool ok = true;
   for (int i = 0; i < 4; ++i)
@@ -193,12 +160,6 @@ int checkAdminPin()
   {
     tone(speakerPin, 300, 250);
     isAdminLoggedIn = true;
-    //return pin was correctly for log
-    return 0;
-  }
-  else
-  {
-    return -1;
   }
 }
 void checkPin()
@@ -214,17 +175,13 @@ void checkPin()
   }
   if (ok)
   {
-    UnlockDoor(ADDRESS);
+    UnlockDoor();
     delay(1000);
   }
   else
   {
     notOkBeep();
-    //check if pin was correctly
-    if (checkAdminPin())
-    {
-      sendLog(PIN_ENTERED_INCORRECTLY, ADDRESS);
-    }
+    checkAdminPin();
   }
   countInsertedPin = 0;
 }
@@ -264,15 +221,6 @@ void sendOneByteViaMax(int address, int byte)
   x[1] = byte;
   x[2] = 0;
   x[3] = 0;
-  sendCommandViaMax(x);
-}
-void sendLog(LOG_TYPE value, int source)
-{
-  int x[4];
-  x[0] = 4;
-  x[1] = ADDRESS;
-  x[2] = value;
-  x[3] = source;
   sendCommandViaMax(x);
 }
 void turnOnLight()
@@ -329,10 +277,10 @@ void tastapushedAdmin(int tasta)
       switchLight();
       break;
     case 4:
-      UnlockDoor(ADDRESS);
+      UnlockDoor();
       break;
     case 5:
-      LockDoor(ADDRESS);
+      LockDoor();
       break;
     case 8:
       multimediaPlay();
@@ -385,18 +333,15 @@ void checkSerial()
         {
           x[i] = mySerial.read() - 48;
         }
-        if (x[0] == ADDRESS)
+        if (x[0] == 1)
         {
           switch (x[1])
           {
             case 0:
-              LockDoor(1);
+              LockDoor();
               break;
             case 1:
-              UnlockDoor(1);
-              break;
-            case 2:
-              SwitchDoor(1);
+              UnlockDoor();
               break;
           }
         }
@@ -428,16 +373,16 @@ void loop()
   //delay(100000);
   checkTimer();
   checkSerial();
-  /*if (!digitalRead(unlockerButtonPin))
-    {
+  if (!digitalRead(unlockerButtonPin))
+  {
     UnlockDoor();
     delay(1000);
-    }
-    if (!digitalRead(lockerButtonPin))
-    {
+  }
+  if (!digitalRead(lockerButtonPin))
+  {
     LockDoor();
     delay(1000);
-    }*/
+  }
   int tasta = getPressedTasta();
   if (-1 != tasta)
   {
@@ -445,9 +390,8 @@ void loop()
     {
       if (tasta == 12)
       {
-        LockDoor(0);
+        LockDoor();
         countInsertedPin = 0;
-        delay(300);
       }
       else if (tasta == 10)
       {
@@ -472,10 +416,10 @@ void i2cReceiveEvent(int howMany)
   int x = Wire.read();
   if (x == 0)
   {
-    LockDoor(0);
+    LockDoor();
   }
   if (x == 1)
   {
-    UnlockDoor(0);
+    UnlockDoor();
   }
 }

@@ -1,5 +1,5 @@
 #include <SoftwareSerial.h>
-SoftwareSerial mySerial(5,6);
+SoftwareSerial mySerial(5,11);
 int triggerPin=2;
 int relayPin=9;
 int switcherPin=8;
@@ -120,7 +120,7 @@ void checkI2C()
           mySerial.write(x[i]+48);
         }
         mySerial.println();
-        if(x[0]==3)
+        if(x[0]==2)
         {
          int time,interval;
           stopTimer();
