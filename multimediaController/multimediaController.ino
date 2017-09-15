@@ -48,7 +48,6 @@ decode_results results;
 void writeLan(int byte)
 {
   mySerial.write(byte);
-  Serial.write(byte);
 }
 int readLan()
 {
@@ -73,9 +72,6 @@ void setup()
   //setupEncj();
   irrecv.enableIRIn();
   mySerial.begin(9600);
-  pinMode(triggerPin, OUTPUT);
-  digitalWrite(triggerPin, LOW);
-
 }
 void showNotification(int count)
 {

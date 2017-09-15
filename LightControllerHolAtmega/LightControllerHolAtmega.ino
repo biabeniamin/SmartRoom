@@ -1,84 +1,117 @@
 #include <SoftwareSerial.h>
-SoftwareSerial mySerial(5,11);
-int triggerPin=2;
-int relayPin=9;
-int switcherPin=8;
-int maxPin=A3;
+#include <Room.h>
+#include <LanCommunication.h>
+
+#define ADDRESS 2
+#define TRIGGERED_PIN A3
+
+SoftwareSerial mySerial(0, 1);
+int triggerPin = 2;
+int relayPin = 9;
+int switcherPin = 8;
+int maxPin = 2;
 bool switcherState;
-bool state=false;
-unsigned long now,last,executionTime;
-bool isTimerOn=false;
-int timerAction=-1;
-bool stateBeforeTimer=false;
-void setup()
+bool state = false;
+unsigned long now, last, executionTime;
+bool isTimerOn = false;
+int timerAction = -1;
+int timerOwner=0;
+bool stateBeforeTimer = false;
+
+void writeLan(int byte)
 {
-  pinMode(relayPin,OUTPUT);
-  pinMode(maxPin,OUTPUT);
-  pinMode(switcherPin,INPUT_PULLUP);
-  switcherState=digitalRead(switcherPin);
-  turnOffLight();
-  /*pinMode(triggerPin,OUTPUT);
-  digitalWrite(triggerPin,LOW);*/
-  digitalWrite(maxPin,LOW);
-  Serial.begin(9600);
-  mySerial.begin(9600);
+  mySerial.write(byte);
+}
+int readLan()
+{
+  return mySerial.read();
+}
+int countLan()
+{
+  return mySerial.available();
 }
 
-void turnOnLight()
+LanCommunication lanCom(ADDRESS, TRIGGERED_PIN, &writeLan, &readLan, &countLan);
+Room room(&lanCom);
+
+void setup()
 {
-  state=!false;
-  setLight();
+  pinMode(relayPin, OUTPUT);
+  //pinMode(maxPin, OUTPUT);
+  pinMode(switcherPin, INPUT_PULLUP);
+  switcherState = digitalRead(switcherPin);
+  turnOffLight(ADDRESS);
+  /*pinMode(triggerPin,OUTPUT);
+  digitalWrite(triggerPin,LOW);*/
+  //digitalWrite(maxPin, LOW);
+  //Serial.begin(9600);
+  mySerial.begin(9600);
 }
-void turnOffLight()
+void turnOnLight(int source)
 {
-  state=!true;
-  setLight();
+  state = !false;
+  setLight(source);
 }
-void switchLight()
+void turnOffLight(int source)
 {
-  if(isTimerOn)
-    state=stateBeforeTimer;
-  state=!state;
-  setLight();
+  state = !true;
+  setLight(source);
 }
-void setLight()
+void switchLight(int source)
 {
-  digitalWrite(relayPin,state);
+  if (isTimerOn)
+    state = stateBeforeTimer;
+  state = !state;
+  setLight(source);
+}
+void setLight(int source)
+{
+  digitalWrite(relayPin, state);
+  if(state)
+  {
+    room.SendLog(LIGHT_OPEN,source);
+  }
+  else
+  {
+    room.SendLog(LIGHT_CLOSE,source);
+  }
+  
 }
 void checkSwitcher()
 {
-  if(digitalRead(switcherPin)!=switcherState)
+  if (digitalRead(switcherPin) != switcherState)
   {
-    switchLight();
-    switcherState=digitalRead(switcherPin);
+    switchLight(ADDRESS);
+    switcherState = digitalRead(switcherPin);
     stopTimer();
     delay(300);
   }
 }
-void initializingTimer(int duration,int action)
+void initializingTimer(int duration, int action,int owner)
 {
-  last=millis();
-  executionTime=duration;
-  isTimerOn=true;
-  stateBeforeTimer=state;
-  timerAction=action;
+  last = millis();
+  executionTime = duration;
+  isTimerOn = true;
+  stateBeforeTimer = state;
+  timerAction = action;
+  timerOwner=owner;
 }
 void stopTimer()
 {
-  isTimerOn=false;
+  isTimerOn = false;
 }
 void checkTimer()
 {
-  if(isTimerOn)
+  if (isTimerOn)
   {
-    now=millis();
-    if(now-last>=executionTime)
+    now = millis();
+    if (now - last >= executionTime)
     {
-      switch(timerAction)
+      switch (timerAction)
       {
         case 0:
-          state=!stateBeforeTimer;
-          turnOffLight();
+          state = !stateBeforeTimer;
+          turnOffLight(timerOwner);
           break;
       }
       stopTimer();
@@ -87,65 +120,35 @@ void checkTimer()
 }
 void loop()
 {
-  checkSwitcher();
-  checkTimer();
-  checkI2C();
+  //checkSwitcher();
+  //checkTimer();
+  checkSerial();
 }
-int y[]={9,5,6,8};
-int x[4];
-void checkI2C()
+void checkSerial()
 {
-  if (Serial.available()>7)
-  {
-    while(Serial.available())
+    if (lanCom.ReadCommand())
     {
-      for(int i=0;i<3;++i)
+      int *command = lanCom.GetLastCommand();
+      int interval,time;
+      delay(10);
+      switch (command[2])
       {
-        x[i]=x[i+1];
-      }
-      x[3]=Serial.read()-48;
-      bool isOk=true;
-      for(int i=0;i<4;++i)
-      {
-        if(x[i]!=y[i])
-        {
-          isOk=false;
-        }
-      }
-      if(isOk)
-      {
-        for(int i=0;i<4;++i)
-        {
-          x[i]=Serial.read()-48;
-          mySerial.write(x[i]+48);
-        }
-        mySerial.println();
-        if(x[0]==2)
-        {
-         int time,interval;
-          stopTimer();
-          switch(x[1])
-          {
-            case 0:
-              turnOffLight();
-              break;
-            case 1:
-              turnOnLight();
-              break;
-            case 2:
-              switchLight();
-              break;
-            case 3:
-              interval=x[2];
-              time=x[3];
-              initializingTimer((interval*time)*1000,0);
-              turnOnLight();
-              break;
-          }
-        }
+        case 0:
+          turnOffLight(command[1]);
+          break;
+        case 1:
+          turnOnLight(command[1]);
+          break;
+        case 2:
+          switchLight(command[1]);
+          break;
+        case 3:
+          interval = command[3];
+          time = 1;//command[3];
+          initializingTimer((interval * time) * 1000, 0,command[1]);
+          turnOnLight(command[1]);
+          break;
       }
     }
-  }
-  
-  /**/
+
 }

@@ -9,11 +9,11 @@ Room::~Room()
 }
 void Room::TurnOnLight()
 {
-	_lanComm->SendOlderVersionByte(2, 1);
+	_lanComm->SendByte(2, 1);
 }
 void Room::TurnOffLight()
 {
-	_lanComm->SendOlderVersionByte(2, 0);
+	_lanComm->SendByte(2, 0);
 }
 void Room::SwitchLight()
 {

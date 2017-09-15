@@ -72,7 +72,7 @@ void LanCommunication::SendCommand(int bytes[COMMUNICATION_BYTE_COUNT])
 }
 void LanCommunication::SendByte(int toAddress, int byte)
 {
-	int bytes[COMMUNICATION_BYTE_COUNT] = { _address,toAddress,byte };
+	int bytes[COMMUNICATION_BYTE_COUNT] = { toAddress,_address,byte };
 	SendCommand(bytes);
 }
 void LanCommunication::SendOlderVersionByte(int address, int byte)
@@ -124,11 +124,12 @@ int LanCommunication::ReadCommand()
 				delay(3);
 			for (int i = 0; i < COMMUNICATION_BYTE_COUNT; i++)
 			{
-				_bytesInLastCommand[i] = _readFunct();
+				_bytesInLastCommand[i] = _readByte();
 			}
 
 			if (_address != _bytesInLastCommand[0])
 			{
+
 				ok = 0;
 			}
 		}
