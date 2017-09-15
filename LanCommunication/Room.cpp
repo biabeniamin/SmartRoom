@@ -17,11 +17,11 @@ void Room::TurnOffLight()
 }
 void Room::SwitchLight()
 {
-	_lanComm->SendOlderVersionByte(2, 2);
+	_lanComm->SendByte(2, 2);
 }
 void Room::TurnOnLightOnSeconds(int ISeconds)
 {
-	int data[COMMUNICATION_BYTE_COUNT] = {2,3,ISeconds,1};
+	int data[COMMUNICATION_BYTE_COUNT] = {2,_lanComm->GetDeviceAddress(),3,ISeconds};
 	_lanComm->SendCommand(data);
 }
 void Room::OpenCurtains()
