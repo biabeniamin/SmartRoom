@@ -293,7 +293,7 @@ void checkSerial()
   if (lanCom.ReadCommand())
   {
     int *command = lanCom.GetLastCommand();
-    //raspberry pi needs time to recover in order to log 
+    //raspberry pi needs time to recover in order to log
     delay(100);
     switch (command[2])
     {
