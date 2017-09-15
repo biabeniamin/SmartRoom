@@ -120,8 +120,8 @@ void checkTimer()
 }
 void loop()
 {
-  //checkSwitcher();
-  //checkTimer();
+  checkSwitcher();
+  checkTimer();
   checkSerial();
 }
 void checkSerial()
