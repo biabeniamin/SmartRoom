@@ -2,13 +2,13 @@
 #include <Room.h>
 #include <LanCommunication.h>
 
-#define ADDRESS 5
-#define TRIGGERED_PIN 2
+#define ADDRESS 2
+#define TRIGGERED_PIN A3
 
 SoftwareSerial mySerial(0, 1);
 int triggerPin = 2;
 int relayPin = 9;
-int switcherPin = 4;
+int switcherPin = 8;
 int maxPin = 2;
 bool switcherState;
 bool state = false;

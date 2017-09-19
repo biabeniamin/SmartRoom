@@ -34,6 +34,9 @@ public:
 	void TurnOnLight();
 	void TurnOffLight();
 	void SwitchLight();
+	void TurnOnHallLight();
+	void TurnOffHallLight();
+	void SwitchHallLight();
 	void TurnOnLightOnSeconds(int);
 	void OpenCurtains();
 	void CloseCurtains();
