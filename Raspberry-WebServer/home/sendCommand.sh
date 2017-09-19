@@ -1,19 +1,18 @@
 #!/bin/bash 
 if [[ $#>0 ]]
 then
-	echo $1
 	if [[ "$1" -eq "0" ]]
 	then
 		#switch on
-		python /home/pi/ser.py 2 0 0 0
+		python /home/pi/ser.py 2 4 0 0
 	elif [[ "$1" -eq "1" ]]
 	then
 		#switch off
-		python /home/pi/ser.py 2 1 0 0
+		python /home/pi/ser.py 2 4 1 0
 	elif [[ "$1" -eq "2" ]]
 	then
 		#switch light
-		python /home/pi/ser.py 2 2 0 0
+		python /home/pi/ser.py 2 4 2 0
 	elif [[ "$1" -eq "3" ]]
 	then
 		#open curtains
@@ -38,6 +37,18 @@ then
 	then
 		#switch door
 		python /home/pi/ser.py 3 4 2 0
+	elif [[ "$1" -eq "9" ]]
+	then
+		#switch hall on
+		python /home/pi/ser.py 5 4 0 0
+	elif [[ "$1" -eq "10" ]]
+	then
+		#switch hall off
+		python /home/pi/ser.py 5 4 1 0
+	elif [[ "$1" -eq "11" ]]
+	then
+		#switch hall light
+		python /home/pi/ser.py 5 4 2 0
 	fi
 else
 	echo "[command] argument"
