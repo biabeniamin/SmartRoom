@@ -248,10 +248,10 @@ void tastapushedAdmin(int tasta)
   switch (tasta)
   {
     case 1:
-      room.TurnOnLight();
+      room.SwitchHallLight();
       break;
     case 2:
-      room.TurnOffLight();
+      room.SwitchLight();
       break;
     case 3:
       room.SwitchLight();
@@ -359,7 +359,7 @@ void loop()
       }
       else if (tasta == 10)
       {
-        room.TurnOnLightOnSeconds(5);
+        room.TurnOnHallLightOnSeconds(5);
         delay(300);
       }
       else

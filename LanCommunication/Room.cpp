@@ -36,6 +36,11 @@ void Room::TurnOnLightOnSeconds(int ISeconds)
 	int data[COMMUNICATION_BYTE_COUNT] = {2,_lanComm->GetDeviceAddress(),3,ISeconds};
 	_lanComm->SendCommand(data);
 }
+void Room::TurnOnHallLightOnSeconds(int ISeconds)
+{
+	int data[COMMUNICATION_BYTE_COUNT] = {5 ,_lanComm->GetDeviceAddress(),3,ISeconds };
+	_lanComm->SendCommand(data);
+}
 void Room::OpenCurtains()
 {
 	_lanComm->SendOlderVersionByte(1, 1);

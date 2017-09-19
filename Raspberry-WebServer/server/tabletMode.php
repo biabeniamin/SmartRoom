@@ -22,21 +22,13 @@ if(isset($_GET["cmd"]))
 	{
 		echo shell_exec("/home/pi/sendCommand.sh 1");
 	}
-	else if($_GET["cmd"]=="lightOff")
+	if($_GET["cmd"]=="lightOff")
 	{
 		echo shell_exec("/home/pi/sendCommand.sh 0");
 	}
-	else if($_GET["cmd"]=="lightSwitch")
+	if($_GET["cmd"]=="lightSwitch")
 	{
 		echo shell_exec("/home/pi/sendCommand.sh 2");
-	}
-	else if($_GET["cmd"]=="lightHallOn")
-	{
-		echo shell_exec("/home/pi/sendCommand.sh 10");
-	}
-	else if($_GET["cmd"]=="lightHallOff")
-	{
-		echo shell_exec("/home/pi/sendCommand.sh 9");
 	}
 	else if($_GET["cmd"]=="lightHallSwitch")
 	{
@@ -88,7 +80,7 @@ if(isset($_GET["cmd"]))
 			{
 				background-color: #1B6A9E;
 				text-align: center;
-				width: 800px;
+				width:1000px;
 				margin:0 auto;
 				font-size:20px;
 
@@ -110,55 +102,20 @@ if(isset($_GET["cmd"]))
 	 <body>
 	<div class="main">
 		<h1>Smart room</h1>
-		<a href="?cmd=lightOn"><Button class="button">Turn on light</Button></a>
-		<a href="?cmd=lightOff"><Button class="button">Turn off light</Button></a>
-		<a href="?cmd=lightSwitch"><Button class="button">Switch light</Button></a><br>
-		<!- hall->
-		<a href="?cmd=lightHallOn"><Button class="button">Turn on hall light</Button></a>
-		<a href="?cmd=lightHallOff"><Button class="button">Turn off hall light</Button></a>
-		<a href="?cmd=lightHallSwitch"><Button class="button">Switch hall light</Button></a><br>
-		<a href="?cmd=openCurtains"><Button class="button">Open Curtains</Button></a>
-		<a href="?cmd=closeCurtains"><Button class="button">Close Curtains</Button></a>
-		<a href="?cmd=stopCurtains"><Button class="button">Stop Curtains</Button></a><br>
-		<a href="?cmd=openDoor"><Button class="button">Open Door</Button></a>
-		<a href="?cmd=closeDoor"><Button class="button">Close Door</Button></a>
-		<a href="?cmd=switchDoor"><Button class="button">Switch Door</Button></a><br>
-		<a href="?cmd=clearLog"><Button class="button">Clear Log</Button></a>
-		<a href="index.php"><Button class="button">Refresh</Button></a><br>
+		<a href="?cmd=lightSwitch"><img src="light.png"></a>
+		<a href="?cmd=openCurtains"><img src="openCurtains.png"></a>
+		<a href="?cmd=closeCurtains"><img src="closedCurtains.png"></a>
+		<a href="?cmd=lightHallSwitch"><img src="light.png"></a>
+		<a href="?cmd=stopCurtains"><Button class="button">Stop</Button></a><br>
+
+		<a href="?cmd=openDoor"><img src="doorUnlocked.png">
+		<a href="?cmd=closeDoor"><img src="doorLocked.png"><br>
 		
+		<a href="?cmd=clearLog"><Button class="button">Clear Log</Button></a>
+		<a href="tabletMode.php"><Button class="button">Refresh</Button></a><br>
+		<iframe src="tabletModeRefreshed.php"></iframe><br>
+	
 		<?php
-
-			$temperature=readAllFile("roomStatus/temperature");
-			echo "Temperature: ".$temperature."<br>";
-
-
-			$doorStatus=readAllFile("roomStatus/door");
-			if($doorStatus == 0)
-			{
-				echo "<img style='height:30px;' src=off.png>";
-				echo "Door is unlocked<br>";
-			}
-			else if($doorStatus== 1)
-
-			{
-				echo "<img style='height:30px;' src=on.png>";
-				echo "Door is locked<br>";
-
-			} 
-
-			$lightStatus=readAllFile("roomStatus/light");
-			if($lightStatus == 4)
-			{
-				echo "<img style='height:30px;' src=off.png>";
-				echo "Light is turned off<br>";
-			}
-			else if($lightStatus== 3)
-
-			{
-				echo "<img style='height:30px;' src=on.png>";
-				echo "Light is turned on<br>";
-
-			} 
 			$fileName="logRoom";
 			$file=fopen($fileName,"r");
 			if(filesize($fileName)>0)

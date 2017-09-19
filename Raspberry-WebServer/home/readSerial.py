@@ -13,6 +13,11 @@ def analyze():
 		f = open('/var/www/html/roomStatus/door','w')	
 		f.write(doorState)
 		f.close()
+	elif request[5] == '2':
+		lightState=request[6]
+		f = open('/var/www/html/roomStatus/light','w')	
+		f.write(lightState)
+		f.close()
 class DOOR_STATE(Enum):
 	UNKNOWN = 0
 	OPEN = 1
@@ -34,6 +39,7 @@ while 1:
 		and request[2] == '6'
 		and request[3] == '8'
 		):
+			print(request)
 			if request[4] == '4':
 				now=datetime.now()
 				f = open('/var/www/html/logRoom','a')
