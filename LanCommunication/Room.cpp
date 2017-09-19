@@ -19,6 +19,18 @@ void Room::SwitchLight()
 {
 	_lanComm->SendByte(2, 2);
 }
+void Room::TurnOnHallLight()
+{
+	_lanComm->SendByte(5, 1);
+}
+void Room::TurnOffHallLight()
+{
+	_lanComm->SendByte(5, 0);
+}
+void Room::SwitchHallLight()
+{
+	_lanComm->SendByte(5, 2);
+}
 void Room::TurnOnLightOnSeconds(int ISeconds)
 {
 	int data[COMMUNICATION_BYTE_COUNT] = {2,_lanComm->GetDeviceAddress(),3,ISeconds};
