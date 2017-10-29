@@ -1,16 +1,15 @@
 #include <SoftwareSerial.h>
-SoftwareSerial mySerial(10, 11);
-int maxPin = 9;
-int pins[] = {2, 4, 3, 5};
+SoftwareSerial mySerial(0, 1);
+int maxPin = 2;
+int pins[] = {10, 7, 9, 8};
 int steps = 8000, step = 0;
 int mode = -1;
-int stepDelay = 10;
+int stepDelay = 7;
 unsigned long last, now, interval;
 void setup()
 {
   pinMode(maxPin, OUTPUT);
   digitalWrite(maxPin, LOW);
-  Serial.begin(9600);
   mySerial.begin(9600);
   for (int i = 0; i < 4; ++i)
   {
@@ -24,13 +23,9 @@ void setAllZero()
     digitalWrite(pins[i], LOW);
   }
 }
-void openCurtains()
+void stopCurtains()
 {
-  mode = 0;
-  last = millis();
-  interval = stepDelay;
-  step = 0;
-  Serial.println("opening curtains!");
+  mode=-1;
 }
 void closeCurtains()
 {
@@ -38,17 +33,13 @@ void closeCurtains()
   last = millis();
   interval = stepDelay;
   step = 0;
-  Serial.println("closing curtains!");
-  for (int step = 0; step < steps; step++)
-  {
-    for (int i = 3; i >= 0; --i)
-    {
-
-      digitalWrite(pins[i], 1);
-      delay(stepDelay);
-      setAllZero();
-    }
-  }
+}
+void openCurtains()
+{
+  mode = 0;
+  last = millis();
+  interval = stepDelay;
+  step = 0;
 }
 void loop()
 {
@@ -115,10 +106,7 @@ void checkI2C()
         for (int i = 0; i < 4; ++i)
         {
           x[i] = mySerial.read() - 48;
-          Serial.write(x[i] + 48);
         }
-        Serial.println();
-        Serial.println("some");
         if (x[0] == 1)
         {
           switch (x[1])
@@ -130,6 +118,9 @@ void checkI2C()
             case 1:
               closeCurtains();
               break;
+            case 2:
+              stopCurtains();
+              break;
           }
         }
       }
@@ -138,3 +129,5 @@ void checkI2C()
 
   /**/
 }
+
+
