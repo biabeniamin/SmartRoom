@@ -353,7 +353,7 @@ void loop()
     {
       if (tasta == 12)
       {
-        LockDoor(0);
+        LockDoor(ADDRESS);
         countInsertedPin = 0;
         delay(300);
       }
