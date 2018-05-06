@@ -1,7 +1,31 @@
 #include <SoftwareSerial.h>
+#include <Room.h>
+#include <LanCommunication.h>
+
+#define ADDRESS 1
+#define TRIGGERED_PIN 2
+
 SoftwareSerial mySerial(0, 1);
+
+void writeLan(int byte)
+{
+  mySerial.write(byte);
+}
+int readLan()
+{
+  return mySerial.read();
+}
+int countLan()
+{
+  return mySerial.available();
+}
+
+LanCommunication lanCom(ADDRESS, TRIGGERED_PIN, &writeLan, &readLan, &countLan);
+Room room(&lanCom);
+
+
 int maxPin = 2;
-int pins[] = {10, 7, 9, 8};
+int pins[] = {10, 9, 7, 8};
 int steps = 8000, step = 0;
 int mode = -1;
 int stepDelay = 7;
@@ -25,25 +49,34 @@ void setAllZero()
 }
 void stopCurtains()
 {
-  mode=-1;
+  digitalWrite(pins[1], 0);
+  digitalWrite(pins[0], 0);
 }
 void closeCurtains()
 {
-  mode = 1;
-  last = millis();
-  interval = stepDelay;
-  step = 0;
+  digitalWrite(pins[0], 0);
+  digitalWrite(pins[1], 1);
+  /*digitalWrite(pins[0], LOW);
+    return;
+    mode = 1;
+    last = millis();
+    interval = stepDelay;
+    step = 0;*/
 }
 void openCurtains()
 {
-  mode = 0;
-  last = millis();
-  interval = stepDelay;
-  step = 0;
+  digitalWrite(pins[1], 0);
+  digitalWrite(pins[0], 1);
+  /*analogWrite(pins[0], 200);
+    return;
+    mode = 0;
+    last = millis();
+    interval = stepDelay;
+    step = 0;*/
 }
 void loop()
 {
-  checkTimer();
+  //checkTimer();
   checkI2C();
 }
 int y[] = {9, 5, 6, 8};
@@ -55,7 +88,7 @@ void checkTimer()
   {
     if (mode == 0)
     {
-      int pin=step%4;
+      int pin = step % 4;
       setAllZero();
       digitalWrite(pins[pin], 1);
       step++;
@@ -68,7 +101,7 @@ void checkTimer()
     }
     if (mode == 1)
     {
-      int pin=(steps-step-1)%4;
+      int pin = (steps - step - 1) % 4;
       setAllZero();
       digitalWrite(pins[pin], 1);
       step++;
@@ -84,50 +117,25 @@ void checkTimer()
 }
 void checkI2C()
 {
-  if (mySerial.available() > 7)
+  if (lanCom.ReadCommand())
   {
-    while (mySerial.available())
+    int *command = lanCom.GetLastCommand();
+    int interval, time;
+    delay(10);
+    switch (command[2])
     {
-      for (int i = 0; i < 3; ++i)
-      {
-        x[i] = x[i + 1];
-      }
-      x[3] = mySerial.read() - 48;
-      bool isOk = true;
-      for (int i = 0; i < 4; ++i)
-      {
-        if (x[i] != y[i])
-        {
-          isOk = false;
-        }
-      }
-      if (isOk)
-      {
-        for (int i = 0; i < 4; ++i)
-        {
-          x[i] = mySerial.read() - 48;
-        }
-        if (x[0] == 1)
-        {
-          switch (x[1])
-          {
-            case 0:
-              openCurtains();
-
-              break;
-            case 1:
-              closeCurtains();
-              break;
-            case 2:
-              stopCurtains();
-              break;
-          }
-        }
-      }
+      case 0:
+        openCurtains();
+        break;
+      case 1:
+        closeCurtains();
+        break;
+      case 2:
+        stopCurtains();
+        break;
     }
   }
-
-  /**/
 }
+
 
 
