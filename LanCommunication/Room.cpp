@@ -58,15 +58,15 @@ void Room::TurnOnHallLightOnSeconds(int ISeconds)
 
 void Room::OpenCurtains()
 {
-	_lanComm->SendOlderVersionByte(1, 1);
+	_lanComm->SendByte(1, 1);
 }
 void Room::CloseCurtains()
 {
-	_lanComm->SendOlderVersionByte(1, 0);
+	_lanComm->SendByte(1, 0);
 }
 void Room::StopCurtains()
 {
-	_lanComm->SendOlderVersionByte(1, 2);
+	_lanComm->SendByte(1, 2);
 }
 
 
