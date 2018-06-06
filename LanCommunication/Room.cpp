@@ -1,4 +1,15 @@
 #include "Room.h"
+
+
+//0 multimedia controller
+//1 curtains
+//2 room light
+//3 door
+//4 log
+//5 hall light
+//6 heater
+//8 ac controller
+
 Room::Room(LanCommunication *lanCom)
 {
 	_lanComm = lanCom;
@@ -19,6 +30,8 @@ void Room::SwitchLight()
 {
 	_lanComm->SendByte(2, 2);
 }
+
+
 void Room::TurnOnHallLight()
 {
 	_lanComm->SendByte(5, 1);
@@ -41,18 +54,22 @@ void Room::TurnOnHallLightOnSeconds(int ISeconds)
 	int data[COMMUNICATION_BYTE_COUNT] = {5 ,_lanComm->GetDeviceAddress(),3,ISeconds };
 	_lanComm->SendCommand(data);
 }
+
+
 void Room::OpenCurtains()
 {
-	_lanComm->SendByte(1, 1);
+	_lanComm->SendOlderVersionByte(1, 1);
 }
 void Room::CloseCurtains()
 {
-	_lanComm->SendByte(1, 0);
+	_lanComm->SendOlderVersionByte(1, 0);
 }
 void Room::StopCurtains()
 {
-	_lanComm->SendByte(1, 2);
+	_lanComm->SendOlderVersionByte(1, 2);
 }
+
+
 void Room::OpenDoor()
 {
 	_lanComm->SendByte(3, 1);
@@ -65,6 +82,8 @@ void Room::SwitchDoor()
 {
 	_lanComm->SendByte(3, 2);
 }
+
+
 void Room::PlayMultimedia()
 {
 	_lanComm->SendOlderVersionByte(0,1);
@@ -92,6 +111,11 @@ void Room::VolumeDownMultimedia()
 void Room::LockMultimedia()
 {
 	_lanComm->SendOlderVersionByte(0, 7);
+}
+
+void Room::SwitchAc()
+{
+	_lanComm->SendByte(8, 2);
 }
 void Room::SendLog(LOG_TYPE value, int source)
 {

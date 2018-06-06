@@ -52,6 +52,7 @@ public:
 	void VolumeUpMultimedia();
 	void VolumeDownMultimedia();
 	void LockMultimedia();
+	void SwitchAc();
 	void SendLog(LOG_TYPE, int);
 
 private:
