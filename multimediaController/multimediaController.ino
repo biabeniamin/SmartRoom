@@ -98,50 +98,7 @@ void lockComputer()
   Keyboard.print("l");
   Keyboard.releaseAll();
 }
-/*
-void checkEncj()
- {
- word pos = ether.packetLoop(ether.packetReceive());
- char* request = "GET /?cmd=1 ";
- if (pos)
- {
- char* data = (char *) Ethernet::buffer + pos;
- for (int i = 0; i < 10; ++i)
- {
- request[10] = i + 48;
- if (strncmp(request, data, strlen(request)) == 0)
- {
- switch (i)
- {
- case 1:
- room.SwitchLight();
- break;
- case 2:
- room.TurnOffLight();
- break;
- case 3:
- room.CloseDoor();
- break;
- case 4:
- room.OpenDoor();
- break;
- case 5:
- changeLightMode(0);
- break;
- case 6:
- changeLightMode(1);
- break;
- case 7:
- showNotification(3);
- break;
- 
- }
- }
- }
- memcpy_P(ether.tcpOffset(), page, sizeof page);
- ether.httpServerReply(sizeof page - 1);
- }
- }*/
+
 void loop() {
   //checkEncj();
   if (irrecv.decode(&results))
@@ -236,7 +193,7 @@ void loop() {
       showNotification(5);
       break;*/
     case 3109255487:
-      changeLightMode(1);
+      room.SwitchAc( );
       break;
     case 1337545183:
       changeLightMode(0);
