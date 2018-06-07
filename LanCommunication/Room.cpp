@@ -116,9 +116,11 @@ void Room::LockMultimedia()
 void Room::SwitchAc()
 {
 	_lanComm->SendByte(8, 2);
+
 }
-void Room::SendLog(LOG_TYPE value, int source)
+
+void Room::Register(DEVICE_TYPE_ENUM type)
 {
-	int data[COMMUNICATION_BYTE_COUNT] = { 4,_lanComm->GetDeviceAddress(), value, source };
+	int data[COMMUNICATION_BYTE_COUNT] = { 0xA ,_lanComm->GetDeviceAddress(), type, 0xA};
 	_lanComm->SendCommand(data);
 }

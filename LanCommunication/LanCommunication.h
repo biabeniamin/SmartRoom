@@ -4,6 +4,7 @@
 #define VERIFICATION_BYTE_COUNT 4
 #define ASCII_VALUES 1
 #include "Arduino.h"
+
 class LanCommunication
 {
 public:

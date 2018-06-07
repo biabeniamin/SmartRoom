@@ -2,12 +2,17 @@
 #include <SoftwareSerial.h>
 #include <Room.h>
 #include <LanCommunication.h>
+#include <Log.h>
 
 #define COLS 3
 #define ROWS 4
 #define PWM_LOCKER 200
 #define ADDRESS 3
 #define TRIGGERED_PIN 2
+
+#define DOOR_STATUS_PIN A0
+
+#define DEVICE_TYPE DOOR_LOCKER
 
 typedef enum
 {
@@ -33,6 +38,9 @@ int countInsertedPin = 0;
 unsigned long now, last, interval;
 int timerAction;
 
+char lastDoorStatus = 2;//equals with 2 to send on init
+unsigned long lastDoorStatusUpdate;
+
 MOTORSTATUS motorState = OPEN;
 
 bool isTimerOn = false;
@@ -54,6 +62,7 @@ int countLan()
 
 LanCommunication lanCom(ADDRESS, TRIGGERED_PIN, &writeLan, &readLan, &countLan);
 Room room(&lanCom);
+Log lanLog(&lanCom);
 
 void setTimer(int action, int duration)
 {
@@ -62,13 +71,35 @@ void setTimer(int action, int duration)
   last = now;
   interval = duration;
 }
+
+void CheckDoorStatus()
+{
+  char currentDoorStatus = digitalRead(A0);
+
+  if((lastDoorStatus != currentDoorStatus) && ((millis() - lastDoorStatusUpdate) > 1000))
+  {
+    if(0 == currentDoorStatus)
+    {
+      lanLog.DoorClosed(ADDRESS);
+    }
+    else
+    {
+      lanLog.DoorOpened(ADDRESS);
+    }
+
+    lastDoorStatusUpdate = millis();
+    lastDoorStatus = currentDoorStatus;
+  }
+  
+}
+
 void LockDoor(int source)
 {
   digitalWrite(lockerPin1, LOW);
   analogWrite(lockerPin2, PWM_LOCKER);
   setTimer(0, 1000);
   motorState = CLOSE;
-  room.SendLog(DOOR_CLOSE, source);
+  lanLog.DoorLocked(source);
 }
 void StopMotor()
 {
@@ -81,7 +112,7 @@ void UnlockDoor(int source)
   digitalWrite(lockerPin2, LOW);
   setTimer(0, 1000);
   motorState = OPEN;
-  room.SendLog(DOOR_OPEN, source);
+  lanLog.DoorUnlocked(source);
 }
 void SwitchDoor(int source)
 {
@@ -177,6 +208,10 @@ void setup()
   pinMode(lockerPin1, OUTPUT);
   pinMode(lockerPin2, OUTPUT);
   pinMode(speakerPin, OUTPUT);
+
+  pinMode(DOOR_STATUS_PIN, INPUT_PULLUP);
+
+  room.Register(DEVICE_TYPE);
 }
 int checkAdminPin()
 {
@@ -223,7 +258,7 @@ void checkPin()
     //check if pin was correctly
     if (checkAdminPin())
     {
-      room.SendLog(PIN_ENTERED_INCORRECTLY, ADDRESS);
+      lanLog.DoorPinEnteredIncorrectly(ADDRESS);
     }
   }
   countInsertedPin = 0;
@@ -306,6 +341,9 @@ void checkSerial()
       case 2:
         SwitchDoor(command[1]);
         break;
+      case 255:
+        room.Register(DEVICE_TYPE);
+        break;
 
     }
   }
@@ -332,10 +370,9 @@ int getPressedTasta()
 }
 void loop()
 {
-  //switchLight();
-  //delay(100000);
   checkTimer();
   checkSerial();
+  CheckDoorStatus();
   /*if (!digitalRead(unlockerButtonPin))
     {
     UnlockDoor();

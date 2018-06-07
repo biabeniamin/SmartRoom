@@ -2,30 +2,8 @@
 #define Room_h
 
 #include <LanCommunication.h>
-/*
-typedef enum
-{
-	CLOSE_DOOR,
-	OPEN_DOOR,
-	SWITCH_DOOR,
-	OPEN_CURTAINS,
-	CLOSE_CURTAINS,
-	STOP_CURTAINS,
-	TURNON_LIGHT,
-	TURNOFF_LIGHT,
-	SWITCH_LIGHT,
+#include <DeviceType.h>
 
-};
-*/
-typedef enum
-{
-	DOOR_OPEN = 0,
-	DOOR_CLOSE = 1,
-	PIN_ENTERED_INCORRECTLY = 2,
-	LIGHT_OPEN=3,
-	LIGHT_CLOSE=4
-
-} LOG_TYPE;
 class Room
 {
 public:
@@ -53,7 +31,8 @@ public:
 	void VolumeDownMultimedia();
 	void LockMultimedia();
 	void SwitchAc();
-	void SendLog(LOG_TYPE, int);
+
+	void Register(DEVICE_TYPE_ENUM);
 
 private:
 	LanCommunication *_lanComm;
