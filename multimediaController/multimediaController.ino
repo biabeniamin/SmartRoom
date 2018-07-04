@@ -198,6 +198,9 @@ void loop() {
     case 1337545183:
       changeLightMode(0);
       break;
+    case 900285023:
+      Keyboard.write((char) 0x20);
+      break;
     }
     Serial.println(results.value);
     irrecv.resume(); // Receive the next value

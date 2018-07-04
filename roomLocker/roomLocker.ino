@@ -10,7 +10,7 @@
 #define ADDRESS 3
 #define TRIGGERED_PIN 2
 
-#define DOOR_STATUS_PIN A0
+#define DOOR_STATUS_PIN A4
 
 #define DEVICE_TYPE DOOR_LOCKER
 
@@ -45,7 +45,7 @@ MOTORSTATUS motorState = OPEN;
 
 bool isTimerOn = false;
 SoftwareSerial mySerial(0, 1);
-//SoftwareSerial mySerial2(11, 13);
+SoftwareSerial logSerial(A5, A0);
 
 void writeLan(int byte)
 {
@@ -74,10 +74,11 @@ void setTimer(int action, int duration)
 
 void CheckDoorStatus()
 {
-  char currentDoorStatus = digitalRead(A0);
+  char currentDoorStatus = digitalRead(DOOR_STATUS_PIN);
 
-  if((lastDoorStatus != currentDoorStatus) && ((millis() - lastDoorStatusUpdate) > 1000))
+  if((lastDoorStatus != currentDoorStatus) && (1000 < (millis() - lastDoorStatusUpdate)))
   {
+    logSerial.println("door asfas");
     if(0 == currentDoorStatus)
     {
       lanLog.DoorClosed(ADDRESS);
@@ -190,7 +191,7 @@ void setup()
   Wire.begin(4);
   mySerial.begin(9600);
   //Serial.begin(9600);
-  //mySerial2.begin(9600);
+  logSerial.begin(9600);
   Wire.onReceive(i2cReceiveEvent);
   pinMode(unlockerButtonPin, INPUT_PULLUP);
   pinMode(lockerButtonPin, INPUT_PULLUP);
@@ -212,6 +213,7 @@ void setup()
   pinMode(DOOR_STATUS_PIN, INPUT_PULLUP);
 
   room.Register(DEVICE_TYPE);
+  logSerial.println("start");
 }
 int checkAdminPin()
 {
