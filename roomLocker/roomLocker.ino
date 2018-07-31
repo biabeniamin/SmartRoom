@@ -45,7 +45,6 @@ MOTORSTATUS motorState = OPEN;
 
 bool isTimerOn = false;
 SoftwareSerial mySerial(0, 1);
-SoftwareSerial logSerial(A5, A0);
 
 void writeLan(int byte)
 {
@@ -53,7 +52,9 @@ void writeLan(int byte)
 }
 int readLan()
 {
-  return mySerial.read();
+  int b = mySerial.read(); 
+ 
+  return b;
 }
 int countLan()
 {
@@ -78,7 +79,6 @@ void CheckDoorStatus()
 
   if((lastDoorStatus != currentDoorStatus) && (1000 < (millis() - lastDoorStatusUpdate)))
   {
-    logSerial.println("door asfas");
     if(0 == currentDoorStatus)
     {
       lanLog.DoorClosed(ADDRESS);
@@ -191,7 +191,6 @@ void setup()
   Wire.begin(4);
   mySerial.begin(9600);
   //Serial.begin(9600);
-  logSerial.begin(9600);
   Wire.onReceive(i2cReceiveEvent);
   pinMode(unlockerButtonPin, INPUT_PULLUP);
   pinMode(lockerButtonPin, INPUT_PULLUP);
@@ -213,7 +212,6 @@ void setup()
   pinMode(DOOR_STATUS_PIN, INPUT_PULLUP);
 
   room.Register(DEVICE_TYPE);
-  logSerial.println("start");
 }
 int checkAdminPin()
 {
