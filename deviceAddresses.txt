@@ -1,0 +1,10 @@
+0-multimedia controller
+1-curtains
+2-room light
+3-door
+4-server
+5-hall light
+8-ac 
+
+
+
