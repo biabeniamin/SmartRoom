@@ -7,37 +7,6 @@
 
 #include <SoftwareSerial.h>
 #include <IRremote.h>
-#include <EtherCard.h>
-
-static byte myip[] = {
-  192, 168, 0, 108
-};
-static byte gwip[] = {
-  192, 168, 0, 1
-};
-static byte mymac[] = {
-  0x74, 0x69, 0x69, 0x2D, 0x30, 0x31
-};
-byte Ethernet::buffer[1000];
-const char page[] PROGMEM =
-"<html>"
-"<head><title>"
-"Beniamin Bia's Room Controller"
-"</title></head>"
-"<body style='background-color:blue'>"
-"<div style='background-color:#00ccff;width:400px;margin:auto;'>;"
-"<center><H1>Beniamin Bia's Room Controller</H1>"
-"<a href='?cmd=1'><button>Switch Light</button></a> "
-"<a href='?cmd=2'><button>Turn Off Light</button></a> "
-"<a href='?cmd=3'><button>Close Door</button></a> "
-"<a href='?cmd=4'><button>Open Door</button></a> "
-"<a href='?cmd=5'><button>Music Mode</button></a> "
-"<a href='?cmd=6'><button>Temperature Mode</button></a> "
-"<a href='?cmd=7'><button>Notification</button></a> "
-
-"<center></div></body>"
-"</html>"
-;
 
 int RECV_PIN = 5;
 int triggerPin = 9;
@@ -60,12 +29,7 @@ int countLan()
 LanCommunication lanCom(ADDRESS,TRIGGERED_PIN, &writeLan, &readLan, &countLan);
 Room room(&lanCom);
 
-void setupEncj()
-{
-  if (ether.begin(sizeof Ethernet::buffer, mymac, A0) == 0)
-    Serial.println( "Failed to access Ethernet controller");
-  ether.staticSetup(myip, gwip);
-}
+
 void setup()
 {
   Serial.begin(9600);
@@ -91,14 +55,6 @@ void changeLightMode(int mode)
   x[3] = 0;
   lanCom.SendCommand(x);
 }
-void lockComputer()
-{
-  Keyboard.begin();
-  Keyboard.press(131);
-  Keyboard.print("l");
-  Keyboard.releaseAll();
-}
-
 void loop() {
   //checkEncj();
   if (irrecv.decode(&results))
@@ -106,22 +62,22 @@ void loop() {
     switch (results.value)
     {
     case 2878444831:
-      Remote.increase();
+      room.VolumeUpMultimedia();
       break;
     case 4198438303:
-      Remote.decrease();
+      room.VolumeDownMultimedia();
       break;
     case 2534850111:
-      Remote.mute();
+      room.VolumeMuteMultimedia();
       break;
     case 1033561079:
-      Remote.next();
+      room.NextMultimedia();
       break;
     case 2388475579:
-      Remote.previous();
+      room.PreviousMultimedia();
       break;
     case 2318624347:
-      Remote.play();
+      room.PlayPauseMultimedia();
       break;
     case 2797888379:
       Remote.pause();
@@ -160,7 +116,7 @@ void loop() {
       room.SwitchHallLight();
       break;
     case 3577243675:
-      lockComputer();
+      room.LockMultimedia();
       break;
     case 3855596927:
       room.TurnOnLightOnSeconds(1);
@@ -199,7 +155,7 @@ void loop() {
       changeLightMode(0);
       break;
     case 900285023:
-      Keyboard.write((char) 0x20);
+      room.SpacebarMultimedia();
       break;
     }
     Serial.println(results.value);

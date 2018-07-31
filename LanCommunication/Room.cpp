@@ -83,34 +83,58 @@ void Room::SwitchDoor()
 	_lanComm->SendByte(3, 2);
 }
 
-
+/*
+enum REMOTE_COMMAND_ENUM
+{
+MEDIA_PLAY = 0,
+MEDIA_PAUSE = 1,
+MEDIA_PLAYPAUSE = 2,
+MEDIA_NEXT = 3,
+MEDIA_PREVIOUS = 4,
+MEDIA_VOLUMEUP = 5,
+MEDIA_VOLUMEDOWN = 6,
+MEDIA_VOLUMEMUTE = 7
+};
+*/
 void Room::PlayMultimedia()
 {
-	_lanComm->SendOlderVersionByte(0,1);
+	_lanComm->SendByte(7,0);
 }
 void Room::PauseMultimedia()
 {
-	_lanComm->SendOlderVersionByte(0, 2);
+	_lanComm->SendByte(7, 1);
+}
+void Room::PlayPauseMultimedia()
+{
+	_lanComm->SendByte(7, 2);
 }
 void Room::NextMultimedia()
 {
-	_lanComm->SendOlderVersionByte(0, 3);
+	_lanComm->SendByte(7, 3);
 }
 void Room::PreviousMultimedia()
 {
-	_lanComm->SendOlderVersionByte(0, 4);
+	_lanComm->SendByte(7, 4);
 }
 void Room::VolumeUpMultimedia()
 {
-	_lanComm->SendOlderVersionByte(0, 5);
+	_lanComm->SendByte(7, 5);
 }
 void Room::VolumeDownMultimedia()
 {
-	_lanComm->SendOlderVersionByte(0, 6);
+	_lanComm->SendByte(7, 6);
+}
+void Room::VolumeMuteMultimedia()
+{
+	_lanComm->SendByte(7, 7);
+}
+void Room::SpacebarMultimedia()
+{
+	_lanComm->SendByte(7, 8);
 }
 void Room::LockMultimedia()
 {
-	_lanComm->SendOlderVersionByte(0, 7);
+	_lanComm->SendByte(7, 9);
 }
 
 void Room::SwitchAc()

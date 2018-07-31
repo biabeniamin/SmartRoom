@@ -4,6 +4,8 @@
 3-door
 4-server
 5-hall light
+6-heater
+7-computer
 8-ac 
 
 

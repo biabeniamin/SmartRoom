@@ -25,10 +25,13 @@ public:
 	void SwitchDoor();
 	void PlayMultimedia();
 	void PauseMultimedia();
+	void PlayPauseMultimedia();
 	void NextMultimedia();
 	void PreviousMultimedia();
 	void VolumeUpMultimedia();
 	void VolumeDownMultimedia();
+	void VolumeMuteMultimedia();
+	void SpacebarMultimedia();
 	void LockMultimedia();
 	void SwitchAc();
 
