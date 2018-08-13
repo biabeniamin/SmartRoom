@@ -3,16 +3,22 @@
 #define TRIGGERED_PIN 9
 
 #include <Room.h>
+#include <Log.h>
 #include <LanCommunication.h>
 
 #include <SoftwareSerial.h>
 #include <IRremote.h>
 
-int RECV_PIN = 5;
-int triggerPin = 9;
+#define RECV_PIN  5
+#define WORKBENCHLIGHT_PIN 4
+#define AUDIO_PIN 3
+#define PIR_PIN A0
 SoftwareSerial mySerial(10, 11);
 IRrecv irrecv(RECV_PIN);
 decode_results results;
+
+bool state = false;
+bool audioState = false;
 
 void writeLan(int byte)
 {
@@ -26,8 +32,9 @@ int countLan()
 {
   return mySerial.available();
 }
-LanCommunication lanCom(ADDRESS,TRIGGERED_PIN, &writeLan, &readLan, &countLan);
+LanCommunication lanCom(ADDRESS, TRIGGERED_PIN, &writeLan, &readLan, &countLan);
 Room room(&lanCom);
+Log lanLog(&lanCom);
 
 
 void setup()
@@ -36,6 +43,12 @@ void setup()
   //setupEncj();
   irrecv.enableIRIn();
   mySerial.begin(9600);
+  
+  pinMode(PIR_PIN, INPUT_PULLUP);
+  pinMode(WORKBENCHLIGHT_PIN, OUTPUT);
+  pinMode(AUDIO_PIN, OUTPUT);
+  turnOffLight(ADDRESS);
+  turnOffAudio(ADDRESS);
 }
 void showNotification(int count)
 {
@@ -55,152 +68,223 @@ void changeLightMode(int mode)
   x[3] = 0;
   lanCom.SendCommand(x);
 }
+
+void checkPir()
+{
+  if(digitalRead(PIR_PIN)
+    && 0 == state)
+    {
+      Serial.println("Motion detected!");
+      turnOnLight(ADDRESS);
+    }
+}
+
 void loop() {
-  //checkEncj();
+  checkSerial();
+  checkPir();
   if (irrecv.decode(&results))
   {
     switch (results.value)
     {
-    case 2878444831:
-      room.VolumeUpMultimedia();
-      break;
-    case 4198438303:
-      room.VolumeDownMultimedia();
-      break;
-    case 2534850111:
-      room.VolumeMuteMultimedia();
-      break;
-    case 1033561079:
-      room.NextMultimedia();
-      break;
-    case 2388475579:
-      room.PreviousMultimedia();
-      break;
-    case 2318624347:
-      room.PlayPauseMultimedia();
-      break;
-    case 2797888379:
-      Remote.pause();
-      break;
-    case 1162296347:
-      room.CloseDoor();
-      break;
-    case 2327013275:
-      room.OpenDoor();
-      break;
-    case 3691091931:
-      room.OpenCurtains();
-      break;
-    case 1153697755:
-      room.CloseCurtains();
-      break;
-    case 4034314555:
-      room.StopCurtains();
-      break;
-    case 2980520219:
-      room.TurnOnLight();
-      break;
-    case 3961599383:
-      room.TurnOffLight();
-      break;
-    case 1217346747:
-      room.SwitchLight();
-      break;
-    case 4287727287:
-      room.TurnOnHallLight();
-      break;
-    case 4131161687:
-      room.TurnOffHallLight();
-      break;
-    case 324312031:
-      room.SwitchHallLight();
-      break;
-    case 3577243675:
-      room.LockMultimedia();
-      break;
-    case 3855596927:
-      room.TurnOnLightOnSeconds(1);
-      break;
-    case 2721879231:
-      room.TurnOnLightOnSeconds(2);
-      break;
-    case 3877748955:
-      room.TurnOnLightOnSeconds(3);
-      break;
-    case 4039382595:
-      room.TurnOnLightOnSeconds(4);
-      break;
-    case 2538093563:
-      room.TurnOnLightOnSeconds(5);
-      break;
-    case 2259740311:
-      room.TurnOnLightOnSeconds(6);
-      break;
-    case 2666828831:
-      room.TurnOnLightOnSeconds(7);
-      break;
-    case 2747854299:
-      room.TurnOnLightOnSeconds(8);
-      break;
-    case 1541889663:
-      room.TurnOnLightOnSeconds(9);
-      break;
-    /*case 4287727287:
-      showNotification(5);
-      break;*/
-    case 3109255487:
-      room.SwitchAc( );
-      break;
-    case 1337545183:
-      changeLightMode(0);
-      break;
-    case 900285023:
-      room.SpacebarMultimedia();
-      break;
+      case 16752735:
+        room.VolumeUpMultimedia();
+        break;
+      case 16711935:
+        room.VolumeDownMultimedia();
+        break;
+      case 16724175:
+        room.VolumeMuteMultimedia();
+        break;
+      case 16718055:
+        room.NextMultimedia();
+        break;
+      case 16762935:
+        room.PreviousMultimedia();
+        break;
+      case 16773645:
+        room.PlayPauseMultimedia();
+        break;
+      case 16771605:
+        room.PlayPauseMultimedia();
+        break;
+      case 16713975:
+        room.CloseDoor();
+        break;
+      case 16744575:
+        room.OpenDoor();
+        break;
+      case 16734375:
+        room.OpenCurtains();
+        break;
+      case 16740495:
+        room.CloseCurtains();
+        break;
+      case 16769055:
+        room.StopCurtains();
+        break;
+      case 16767525:
+        room.TurnOnLight();
+        break;
+      case 16765485:
+        room.TurnOffLight();
+        break;
+      case 16726215:
+        room.SwitchLight();
+        break;
+      case 16722135:
+        room.SwitchHallLight();
+        break;
+      case 16764975:
+        room.LockMultimedia();
+        break;
+      case 16748655:
+        room.TurnOnLightOnSeconds(1);
+        break;
+      case 16758855:
+        room.TurnOnLightOnSeconds(2);
+        break;
+      case 16775175:
+        room.TurnOnLightOnSeconds(3);
+        break;
+      case 16756815:
+        room.TurnOnLightOnSeconds(4);
+        break;
+      case 16750695:
+        room.TurnOnLightOnSeconds(5);
+        break;
+      case 16767015:
+        room.TurnOnLightOnSeconds(6);
+        break;
+      case 16746615:
+        room.TurnOnLightOnSeconds(7);
+        break;
+      case 16754775:
+        room.TurnOnLightOnSeconds(8);
+        break;
+      case 16771095:
+        room.TurnOnLightOnSeconds(9);
+        break;
+      /*case 4287727287:
+        showNotification(5);
+        break;*/
+      case 16763445:
+        room.SwitchAc( );
+        break;
+      case 1337545183:
+        changeLightMode(0);
+        break;
+      case 16773135:
+        room.SpacebarMultimedia();
+        break;
+      case 16732335:
+        switchLight(ADDRESS);
+        break;
+        case 16742535:
+        switchAudio(ADDRESS);
+        break;
     }
     Serial.println(results.value);
     irrecv.resume(); // Receive the next value
-    Remote.clear();
   }
 }
-void remoteCommand(int command)
+void setLight(int source)
 {
-  switch (command)
+  Serial.print("Set light: ");
+  Serial.println(state);
+  digitalWrite(WORKBENCHLIGHT_PIN, !state);
+  if (state)
   {
-    //case 6:lockComputer();break;
-  case 2:
-    Remote.next();
-    break;
-  case 3:
-    Remote.previous();
-    break;
-  case 1:
-    Remote.play();
-    break;
-  case 0:
-    Remote.pause();
-    break;
-  case 5:
-    Remote.increase();
-    delay(100);
-    break;
-  case 4:
-    Remote.decrease();
-    delay(100);
-    break;
-  case 7:
-    Remote.mute();
-    break;
+    lanLog.LightOpen(source);
   }
-  Remote.clear();
+  else
+  {
+    lanLog.LightClose(source);
+  }
+
 }
-void receiveEventI2c(int howMany)
+
+void turnOnLight(int source)
 {
-  //int x=Wire.read();
-  //remoteCommand(x);
+  state = !false;
+  setLight(source);
 }
 
+void turnOffLight(int source)
+{
+  state = !true;
+  setLight(source);
+}
 
+void switchLight(int source)
+{
+  state = !state;
+  setLight(source);
+}
+
+void setAudio(int source)
+{
+  digitalWrite(AUDIO_PIN, !audioState);
+  if (audioState)
+  {
+    lanLog.LightOpen(source);
+  }
+  else
+  {
+    lanLog.LightClose(source);
+  }
+
+}
+
+void turnOnAudio(int source)
+{
+  audioState = !false;
+  setAudio(source);
+}
+
+void turnOffAudio(int source)
+{
+  audioState = !true;
+  setAudio(source);
+}
+
+void switchAudio(int source)
+{
+  audioState = !audioState;
+  setAudio(source);
+}
+
+void checkSerial()
+{
+  if (lanCom.ReadCommand())
+  {
+    int *command = lanCom.GetLastCommand();
+    int interval, time;
+    delay(10);
+    switch (command[2])
+    {
+      case 0:
+        turnOffLight(command[1]);
+        break;
+      case 1:
+        turnOnLight(command[1]);
+        break;
+      case 2:
+        switchLight(command[1]);
+        break;
+      case 3:
+        turnOffAudio(command[1]);
+        break;
+      case 4:
+        turnOnAudio(command[1]);
+        break;
+        case 5:
+        switchAudio(command[1]);
+        break;
+
+    }
+  }
+
+}
 
 
 
