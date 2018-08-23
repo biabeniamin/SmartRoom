@@ -7,10 +7,10 @@ class Display
 public:
 	Display(BYTE, BYTE, BYTE);
 
-	void Write(WORD);
+	void Write(DWORD);
 
 private:
-	void WriteCode(WORD);
+	void WriteCode(DWORD);
 
 	BYTE _serialPin;
 	BYTE _shiftClockPin;

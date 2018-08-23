@@ -11,8 +11,13 @@ void setup()
   Serial.begin(9600);
   clock.InitClock();
 }
+DWORD aux;
 void loop()
 {
+  DWORD displayValue;
+
+  displayValue = 0;
+  
   clock.UpdateTimeDate();
   Serial.print(clock.GetHour());
   Serial.print(":");
@@ -20,6 +25,10 @@ void loop()
   Serial.print(":");
   Serial.println(clock.GetSecond());
 
-  display.Write(clock.GetHour() * 100 + clock.GetMinute());
+  displayValue = (DWORD)clock.GetHour() * 10000;
+  displayValue += clock.GetMinute() * 100;
+  displayValue += clock.GetSecond();
+  display.Write(displayValue);
+  delay(100);
 }
 
