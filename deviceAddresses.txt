@@ -7,6 +7,7 @@
 6-heater
 7-computer
 8-ac 
+9-clock
 
 
 

@@ -43,7 +43,6 @@ Display::Display(BYTE SerialPin, BYTE ShiftClockPin, BYTE StorePin)
 
 void Display::Write(DWORD Value)
 {
-  Serial.println(Value);
   DWORD code;
 
   code = 0;

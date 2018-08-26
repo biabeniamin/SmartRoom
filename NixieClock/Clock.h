@@ -3,8 +3,8 @@
 #ifdef DS3234
 
 #include <SPI.h>
+#include "Types.h"
 
-#endif // DS3234
 
 
 
@@ -34,6 +34,10 @@ public:
 	void IncrementMinute();
 	void IncrementSecond();
 
+	void SetHour(BYTE);
+	void SetMinute(BYTE);
+	void SetSecond(BYTE);
+
 private:
 	int _cs;
 
@@ -45,3 +49,5 @@ private:
 	int _rtcDay = 0;
 	int _rtcDayOfWeek = 0;
 };
+
+#endif // DS3234

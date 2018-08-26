@@ -266,3 +266,24 @@ void Clock::IncrementSecond()
 		_rtcSecond = 0;
 	}
 }
+
+void Clock::SetHour(BYTE Hour)
+{
+	UpdateTimeDate();
+	_rtcHour = Hour;
+	SetTime();
+}
+
+void Clock::SetMinute(BYTE Minute)
+{
+	UpdateTimeDate();
+	_rtcMinute = Minute;
+	SetTime();
+}
+
+void Clock::SetSecond(BYTE Second)
+{
+	UpdateTimeDate();
+	_rtcSecond = Second;
+	SetTime();
+}
