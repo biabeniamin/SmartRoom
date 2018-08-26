@@ -16,6 +16,11 @@ public:
 	void DoorOpened(int);
 	void DoorClosed(int);
 
+	void LightOpen(int);
+	void LightClose(int);
+
+	void AcSwitch(int);
+
 	void SendLog(char, int);
 
 private:

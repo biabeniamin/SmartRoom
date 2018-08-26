@@ -6,8 +6,10 @@
 #define DOOR_OPEN_LOG 3
 #define DOOR_CLOSE_LOG 4
 
-#define LIGHT_OPEN_LOG 5
-#define LIGHT_CLOSE_LOG 6
+#define LIGHT_OPEN_LOG 1
+#define LIGHT_CLOSE_LOG 0
+
+#define AC_SWITCH_LOG 0
 
 Log::Log(LanCommunication *lanCom)
 {
@@ -47,4 +49,19 @@ void Log::DoorOpened(int source)
 void Log::DoorClosed(int source)
 {
 	SendLog(DOOR_CLOSE_LOG, source);
+}
+
+void Log::LightOpen(int source)
+{
+	SendLog(LIGHT_OPEN_LOG, source);
+}
+
+void Log::LightClose(int source)
+{
+	SendLog(LIGHT_CLOSE_LOG, source);
+}
+
+void Log::AcSwitch(int source)
+{
+	SendLog(AC_SWITCH_LOG, source);
 }
