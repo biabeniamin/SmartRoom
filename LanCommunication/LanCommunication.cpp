@@ -1,7 +1,7 @@
 #include "LanCommunication.h"
 //#define DO_DEBUG
 
-int _verificationBytes[VERIFICATION_BYTE_COUNT] = { 9, 5, 6, 8 };
+int _verificationBytes[VERIFICATION_BYTE_COUNT] = { 9, 5, 6, 7 };
 
 LanCommunication::LanCommunication(int address, int triggerPin, void(*writeFunct)(int), int(*readFunct)(), int(*countFunct)())
 {
@@ -90,10 +90,13 @@ int LanCommunication::_checkVerificationBytes()
 	int founded = 0;
 	while (_countFunct() > 0 && founded == 0)
 	{
+		//Serial.println();
 		for (int i = 0; i < VERIFICATION_BYTE_COUNT - 1; ++i)
 		{
 			receivedBytes[i] = receivedBytes[i + 1];
+			//Serial.print(receivedBytes[i]);
 		}
+		//Serial.println();
 		receivedBytes[VERIFICATION_BYTE_COUNT - 1] = _readByte();
 		int isOk = 1;
 		for (int i = 0; i < VERIFICATION_BYTE_COUNT; i++)

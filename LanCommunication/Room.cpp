@@ -143,6 +143,12 @@ void Room::SwitchAc()
 
 }
 
+void Room::UpdateNixieClockTime()
+{
+	_lanComm->SendByte(7, 10);
+	Serial.println("send new");
+}
+
 void Room::Register(DEVICE_TYPE_ENUM type)
 {
 	int data[COMMUNICATION_BYTE_COUNT] = { 0xA ,_lanComm->GetDeviceAddress(), type, 0xA};

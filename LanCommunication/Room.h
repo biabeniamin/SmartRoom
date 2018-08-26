@@ -35,6 +35,8 @@ public:
 	void LockMultimedia();
 	void SwitchAc();
 
+	void UpdateNixieClockTime();
+
 	void Register(DEVICE_TYPE_ENUM);
 
 private:

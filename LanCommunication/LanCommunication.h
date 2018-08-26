@@ -1,8 +1,8 @@
 #pragma once
 
-#define COMMUNICATION_BYTE_COUNT 4
+#define COMMUNICATION_BYTE_COUNT 5
 #define VERIFICATION_BYTE_COUNT 4
-#define ASCII_VALUES 1
+#define ASCII_VALUES 0
 #include "Arduino.h"
 
 class LanCommunication
