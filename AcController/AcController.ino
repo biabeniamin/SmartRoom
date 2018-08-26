@@ -1,6 +1,7 @@
 #include <SoftwareSerial.h>
 #include <Room.h>
 #include <LanCommunication.h>
+#include <Log.h>
 #include <IRremote.h>
 
 #define ADDRESS 8
@@ -33,47 +34,11 @@ int countLan()
 
 LanCommunication lanCom(ADDRESS, TRIGGERED_PIN, &writeLan, &readLan, &countLan);
 Room room(&lanCom);
+Log lanLog(&lanCom);
 
 void setup()
 {
-  pinMode(relayPin, OUTPUT);
-  //pinMode(maxPin, OUTPUT);
-  turnOffLight(ADDRESS);
-  /*pinMode(triggerPin,OUTPUT);
-  digitalWrite(triggerPin,LOW);*/
-  //digitalWrite(maxPin, LOW);
-  //Serial.begin(9600);
   mySerial.begin(9600);
-}
-void turnOnLight(int source)
-{
-  state = !false;
-  setLight(source);
-}
-void turnOffLight(int source)
-{
-  state = !true;
-  setLight(source);
-}
-void switchLight(int source)
-{
-  if (isTimerOn)
-    state = stateBeforeTimer;
-  state = !state;
-  setLight(source);
-}
-void setLight(int source)
-{
-  digitalWrite(relayPin, state);
-  if(state)
-  {
-    room.SendLog(LIGHT_OPEN,source);
-  }
-  else
-  {
-    room.SendLog(LIGHT_CLOSE,source);
-  }
-  
 }
 
 void initializingTimer(int duration, int action,int owner)
@@ -85,31 +50,9 @@ void initializingTimer(int duration, int action,int owner)
   timerAction = action;
   timerOwner=owner;
 }
-void stopTimer()
-{
-  isTimerOn = false;
-}
-void checkTimer()
-{
-  if (isTimerOn)
-  {
-    now = millis();
-    if (now - last >= executionTime)
-    {
-      switch (timerAction)
-      {
-        case 0:
-          state = !stateBeforeTimer;
-          turnOffLight(timerOwner);
-          break;
-      }
-      stopTimer();
-    }
-  }
-}
+
 void loop()
 {
-  checkTimer();
   checkSerial();
 }
 void checkSerial()
@@ -122,7 +65,8 @@ void checkSerial()
       switch (command[2])
       {
         case 2:
-          irsend.sendNEC(0x807E10EF, 32);
+          irsend.sendNEC (0x807E10EF, 32);
+          lanLog.AcSwitch(command[1]);
           break;
       }
     }
