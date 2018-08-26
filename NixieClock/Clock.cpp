@@ -287,3 +287,12 @@ void Clock::SetSecond(BYTE Second)
 	_rtcSecond = Second;
 	SetTime();
 }
+
+void Clock::SetTime(BYTE Hour, BYTE Minute, BYTE Second)
+{
+	UpdateTimeDate();
+	_rtcHour = Hour;
+	_rtcMinute = Minute;
+	_rtcSecond = Second;
+	SetTime();
+}

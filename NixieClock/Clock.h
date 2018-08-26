@@ -37,6 +37,7 @@ public:
 	void SetHour(BYTE);
 	void SetMinute(BYTE);
 	void SetSecond(BYTE);
+	void SetTime(BYTE, BYTE, BYTE);
 
 private:
 	int _cs;

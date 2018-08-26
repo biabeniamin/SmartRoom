@@ -13,10 +13,14 @@ SoftwareSerial mySerial(3, 4);
 
 void writeLan(int byte)
 {
+  Serial.print(byte);
   mySerial.write(byte);
 }
 int readLan()
 {
+  int cc=mySerial.read();
+  Serial.print(cc);
+  return cc;
   return mySerial.read();
 }
 int countLan()
@@ -37,6 +41,7 @@ void setup()
   Serial.begin(9600);
   mySerial.begin(9600);
   clock.InitClock();
+  room.UpdateNixieClockTime();
 }
 DWORD aux;
 void loop()
@@ -58,7 +63,9 @@ void loop()
   displayValue += clock.GetMinute() * 100;
   displayValue += clock.GetSecond();
   display.Write(displayValue);
-  delay(400);
+  
+  
+  delay(100);
 }
 
 void checkSerial()
@@ -80,25 +87,20 @@ void checkSerial()
     switch (command[1])
     {
       case 0:
-        Serial.println("Set hour");
+        Serial.println("Set time");
 
-        hour = (command[2] * 10) + command[3];
-        Serial.println(hour);
-        clock.SetHour(hour);
-        break;
-      case 1:
-        Serial.println("Set minute");
-
-        minute = (command[2] * 10) + command[3];
-        Serial.println(minute);
-        clock.SetMinute(minute);
-        break;
-      case 2:
-        Serial.println("Set second");
-
-        second = (command[2] * 10) + command[3];
-        Serial.println(second);
-        clock.SetSecond(second);
+        hour = command[2];
+        minute = command[3];
+        second = command[4];
+        
+        Serial.print((int)hour);
+        Serial.print(":");
+        Serial.print((int)minute);
+        Serial.print(":");
+        Serial.println((int)second);
+        Serial.println("Time set");
+        
+        clock.SetTime(hour, minute, second);
         break;
 
     }
