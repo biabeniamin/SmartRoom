@@ -20,67 +20,69 @@ Room::~Room()
 }
 void Room::TurnOnLight()
 {
-	_lanComm->SendByte(2, 1);
+	_lanComm->SendAsciiByte(2, 1);
 }
+
 void Room::TurnOffLight()
 {
-	_lanComm->SendByte(2, 0);
+	_lanComm->SendAsciiByte(2, 0);
 }
+
 void Room::SwitchLight()
 {
-	_lanComm->SendByte(2, 2);
+	_lanComm->SendAsciiByte(2, 2);
 }
 
 
 void Room::TurnOnHallLight()
 {
-	_lanComm->SendByte(5, 1);
+	_lanComm->SendAsciiByte(5, 1);
 }
 void Room::TurnOffHallLight()
 {
-	_lanComm->SendByte(5, 0);
+	_lanComm->SendAsciiByte(5, 0);
 }
 void Room::SwitchHallLight()
 {
-	_lanComm->SendByte(5, 2);
+	_lanComm->SendAsciiByte(5, 2);
 }
 void Room::TurnOnLightOnSeconds(int ISeconds)
 {
 	int data[COMMUNICATION_BYTE_COUNT] = {2,_lanComm->GetDeviceAddress(),3,ISeconds};
-	_lanComm->SendCommand(data);
+	_lanComm->SendAsciiCommand(data);
 }
 void Room::TurnOnHallLightOnSeconds(int ISeconds)
 {
 	int data[COMMUNICATION_BYTE_COUNT] = {5 ,_lanComm->GetDeviceAddress(),3,ISeconds };
-	_lanComm->SendCommand(data);
+	_lanComm->SendAsciiCommand(data);
 }
 
 
 void Room::OpenCurtains()
 {
-	_lanComm->SendByte(1, 1);
+	_lanComm->SendAsciiByte(1, 1);
 }
 void Room::CloseCurtains()
 {
-	_lanComm->SendByte(1, 0);
+	_lanComm->SendAsciiByte(1, 0);
 }
 void Room::StopCurtains()
 {
-	_lanComm->SendByte(1, 2);
+	_lanComm->SendAsciiByte(1, 2);
 }
 
 
 void Room::OpenDoor()
 {
-	_lanComm->SendByte(3, 1);
+	_lanComm->SendAsciiByte(3, 1);
 }
 void Room::CloseDoor()
 {
-	_lanComm->SendByte(3, 0);
+	_lanComm->SendAsciiByte(3, 0);
 }
 void Room::SwitchDoor()
 {
-	_lanComm->SendByte(3, 2);
+	_lanComm->SendAsciiByte(3, 2);
 }
 
 /*
@@ -139,7 +141,7 @@ void Room::LockMultimedia()
 
 void Room::SwitchAc()
 {
-	_lanComm->SendByte(8, 2);
+	_lanComm->SendAsciiByte(8, 2);
 
 }
 
@@ -153,4 +155,35 @@ void Room::Register(DEVICE_TYPE_ENUM type)
 {
 	int data[COMMUNICATION_BYTE_COUNT] = { 0xA ,_lanComm->GetDeviceAddress(), type, 0xA};
 	_lanComm->SendCommand(data);
+}
+
+void Room::TurnOnAudio()
+{
+	_lanComm->SendByte(0, 4);
+}
+
+void Room::TurnOffAudio()
+{
+	_lanComm->SendByte(0, 3);
+}
+
+void Room::SwitchAudio()
+{
+	_lanComm->SendByte(0, 5);
+}
+
+
+void Room::TurnOnBenchLight()
+{
+	_lanComm->SendByte(0, 1);
+}
+
+void Room::TurnOffBenchLight()
+{
+	_lanComm->SendByte(0, 0);
+}
+
+void Room::SwitchBenchLight()
+{
+	_lanComm->SendByte(0, 2);
 }

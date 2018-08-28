@@ -2,6 +2,7 @@
 //#define DO_DEBUG
 
 int _verificationBytes[VERIFICATION_BYTE_COUNT] = { 9, 5, 6, 7 };
+int _asciiVerificationBytes[VERIFICATION_BYTE_COUNT] = { 9, 5, 6, 8 };
 
 LanCommunication::LanCommunication(int address, int triggerPin, void(*writeFunct)(int), int(*readFunct)(), int(*countFunct)())
 {
@@ -34,18 +35,22 @@ int LanCommunication::_readByte()
 	return _readFunct();
 #endif
 }
+
 int LanCommunication::_readCount()
 {
 	return _countFunct();
 }
+
 void LanCommunication::_activateMax()
 {
 	digitalWrite(_triggerPin, HIGH);
 }
+
 void LanCommunication::_deactivateMax()
 {
 	digitalWrite(_triggerPin, LOW);
 }
+
 void LanCommunication::_writeVerificationBytes()
 {
 	for (int i = 0; i < VERIFICATION_BYTE_COUNT; i++)
@@ -53,6 +58,15 @@ void LanCommunication::_writeVerificationBytes()
 		_writeByte(_verificationBytes[i]);
 	}
 }
+
+void LanCommunication::_writeAsciiVerificationBytes()
+{
+	for (int i = 0; i < VERIFICATION_BYTE_COUNT; i++)
+	{
+		_writeByte(_asciiVerificationBytes[i] + 48);
+	}
+}
+
 void LanCommunication::SendCommand(int bytes[COMMUNICATION_BYTE_COUNT])
 {
 	_activateMax();
@@ -70,11 +84,37 @@ void LanCommunication::SendCommand(int bytes[COMMUNICATION_BYTE_COUNT])
 	//delay(1);
 	_deactivateMax();
 }
+
+void LanCommunication::SendAsciiCommand(int bytes[COMMUNICATION_BYTE_COUNT])
+{
+	_activateMax();
+	_writeAsciiVerificationBytes();
+	for (int i = 0; i < COMMUNICATION_BYTE_COUNT; i++)
+	{
+#ifdef DO_DEBUG
+		Serial.print(bytes[i]);
+#endif // DO_DEBUG
+		_writeByte(bytes[i] + 48);
+	}
+#ifdef DO_DEBUG
+	Serial.println();
+#endif // DO_DEBUG
+	//delay(1);
+	_deactivateMax();
+}
+
 void LanCommunication::SendByte(int toAddress, int byte)
 {
 	int bytes[COMMUNICATION_BYTE_COUNT] = { toAddress,_address,byte };
 	SendCommand(bytes);
 }
+
+void LanCommunication::SendAsciiByte(int toAddress, int byte)
+{
+	int bytes[COMMUNICATION_BYTE_COUNT] = { toAddress, _address, byte};
+	SendAsciiCommand(bytes);
+}
+
 void LanCommunication::SendOlderVersionByte(int address, int byte)
 {
 	int bytes[COMMUNICATION_BYTE_COUNT] = { address,byte };

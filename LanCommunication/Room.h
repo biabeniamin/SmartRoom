@@ -12,17 +12,29 @@ public:
 	void TurnOnLight();
 	void TurnOffLight();
 	void SwitchLight();
+	void TurnOnLightOnSeconds(int);
+
 	void TurnOnHallLight();
 	void TurnOffHallLight();
 	void SwitchHallLight();
-	void TurnOnLightOnSeconds(int);
 	void TurnOnHallLightOnSeconds(int);
+
 	void OpenCurtains();
 	void CloseCurtains();
 	void StopCurtains();
+
 	void OpenDoor();
 	void CloseDoor();
 	void SwitchDoor();
+
+	void TurnOnAudio();
+	void TurnOffAudio();
+	void SwitchAudio();
+
+	void TurnOnBenchLight();
+	void TurnOffBenchLight();
+	void SwitchBenchLight();
+
 	void PlayMultimedia();
 	void PauseMultimedia();
 	void PlayPauseMultimedia();
@@ -33,6 +45,7 @@ public:
 	void VolumeMuteMultimedia();
 	void SpacebarMultimedia();
 	void LockMultimedia();
+
 	void SwitchAc();
 
 	void UpdateNixieClockTime();

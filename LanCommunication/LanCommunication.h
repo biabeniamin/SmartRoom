@@ -11,7 +11,9 @@ public:
 	LanCommunication(int, int, void (*)(int),int (*)(),int (*)());
 	~LanCommunication();
 	void SendCommand(int bytes[COMMUNICATION_BYTE_COUNT]);
-	void SendByte(int,int);
+	void SendAsciiCommand(int bytes[COMMUNICATION_BYTE_COUNT]);
+	void SendByte(int, int);
+	void SendAsciiByte(int, int);
 	void SendOlderVersionByte(int, int);
 	int IsCommandAvailable();
 	int ReadCommand();
@@ -20,6 +22,7 @@ public:
 private:
 	//functions
 	void _writeVerificationBytes();
+	void _writeAsciiVerificationBytes();
 	void _writeByte(int value);
 	int _readByte();
 	int _readCount();
