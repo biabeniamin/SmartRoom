@@ -24,19 +24,19 @@ void Timer::SetTimer()
 	cli();
 
 	// set entire TCCR2A register to 0
-	TCCR0A = 0;
+	TCCR1A = 0;
 	// same for TCCR2B
-	TCCR0B = 0;
+	TCCR1B = 0;
 	//initialize counter value to 0
-	TCNT0 = 0;
+	TCNT1L = 0;
 	// set compare match register for 2khz increments
 	// frequency will be 31Hz
-	OCR0A = 156;
+	OCR1AL = 156;
 	// turn on CTC mode
-	TCCR0A |= (1 << WGM01);
+	TCCR1B |= (1 << WGM12);
 	// Set CS02 and CS00 bits for 1024 prescaler
-	TCCR0B |= (1 << CS02);
-	TCCR0B |= (1 << CS00);
+	TCCR1B |= (1 << CS12);
+	TCCR1B |= (1 << CS10);
 
 	TurnOff();
 
@@ -47,20 +47,20 @@ void Timer::SetTimer()
 void Timer::TurnOn()
 {
 	//enable timer compare interrupt
-	TIMSK0 |= (1 << OCIE0A);
+	TIMSK1 |= (1 << OCIE1A);
 }
 
 void Timer::TurnOff()
 {
 	//disable timer compare interrupt
-	TIMSK0 &= 0xFF ^ (1 << OCIE0A);
+	TIMSK1 &= 0xFF ^ (1 << OCIE1A);
 
 	_timerTicks = 0;
 }
 
 bool Timer::IsTimerOn()
 {
-	return (0 != (TIMSK0 & (1 << OCIE0A)));
+	return (0 != (TIMSK1 & (1 << OCIE1A)));
 }
 
 
@@ -121,7 +121,7 @@ void Timer::RegisterEvent(DWORD interval, void(*callback)())
 
 #ifndef TIMER_INHERITANCE
 
-ISR(TIMER0_COMPA_vect) { //timer0 interrupt 2kHz toggles pin 8
+ISR(TIMER1_COMPA_vect) { //timer0 interrupt 2kHz toggles pin 8
 						 //generates pulse wave of frequency 2kHz/2 = 1kHz (takes two cycles for full wave- toggle high then toggle low)
 	Timer::GetInstance()->TimerEvent();
 }
