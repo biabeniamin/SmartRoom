@@ -131,7 +131,7 @@ def analyzeAsciiCommand(request):
 		print("set time")
 		roomLan.setNixieClockTime()
 	else:
-		remoteCommand(ord(request[6]), 1)
+		remoteCommand(ord(request[6]), [1])
 
 def readSerial():
 	global serial
