@@ -157,7 +157,10 @@ void loop() {
   httpGetRequest(url);
   Serial.println(String(getTemperature()));
 
-
+  delay(5000);
+  url = host3;
+  url += String(getHumidity());
+  httpGetRequest(url);
 
   delay(120000);
 }
