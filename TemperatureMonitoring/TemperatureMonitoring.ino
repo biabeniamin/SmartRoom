@@ -52,6 +52,28 @@ float getTemperature()
   return temp_c;
 }
 
+float getHumidity()
+{
+
+  float temp_c;
+  float temp_f;
+  float humidity;
+
+  // Read values from the sensor
+  temp_c = sht1x.readTemperatureC();
+  temp_f = sht1x.readTemperatureF();
+  humidity = sht1x.readHumidity();
+
+  // Print the values to the serial port
+  Serial.print("F. Humidity: ");
+  Serial.print(humidity);
+  Serial.println("%");
+
+  return humidity;
+}
+
+
+
 void setup() {
   Serial.begin(9600);
   delay(10);
