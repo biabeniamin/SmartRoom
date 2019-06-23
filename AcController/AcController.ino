@@ -64,12 +64,12 @@ void loop()
 {
   checkSerial();
 
-  if ((1 == state)
+  /*if ((1 == state)
       && (3000 < timer->GetUpTime()->GetTotalMiliSeconds() - startTime))
   {
     turnOff();
     lanLog.SendLog(51, 5);
-  }
+  }*/
 }
 void checkSerial()
 {
@@ -80,10 +80,13 @@ void checkSerial()
 
     switch (command[2])
     {
+      case 0:
+        turnOff();
+        break;
       case 1:
         turnOn();
-        startTime = timer->GetUpTime()->GetTotalMiliSeconds();
-        timer->RegisterEvent(command[3] * 1000, turnOff);
+        //startTime = timer->GetUpTime()->GetTotalMiliSeconds();
+        //timer->RegisterEvent(command[3] * 1000, turnOff);
 
         break;
       case 2:
