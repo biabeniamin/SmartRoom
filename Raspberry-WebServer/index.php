@@ -201,6 +201,7 @@ if(isset($_GET["cmd"]))
 		<button onclick="performAction('commands.php?cmd=switchAc')" class="button">Switch ac</Button>
 		<button onclick="performAction('commands.php?cmd=turnOnAc')" class="button">Turn on ac</Button>
 		<button onclick="performAction('commands.php?cmd=turnOffAc')" class="button">Turn off ac</Button>
+		<button onclick="performAction('commands.php?cmd=fastModeAc')" class="button">Fast Mode ac</Button>
 		<button onclick="performAction('commands.php?cmd=alert&value=2')" class="button">Alert</Button>
 <br>
 
