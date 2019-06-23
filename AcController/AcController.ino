@@ -110,11 +110,9 @@ void checkSerial()
     {
       case 0:
         turnOffAc();
-        turnOff();
         break;
       case 1:
         turnOnAc();
-        turnOn();
         //startTime = timer->GetUpTime()->GetTotalMiliSeconds();
         //timer->RegisterEvent(command[3] * 1000, turnOff);
 
