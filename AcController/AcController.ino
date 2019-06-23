@@ -64,6 +64,16 @@ void turnOff()
   state = 0;
 }
 
+void sendIrSignal(const uint16_t PROGMEM *signal, int length)
+{
+  unsigned int irSignal[360];
+  for(int i=0;i<length;i++)
+  {
+    irSignal[i] = pgm_read_word_near(signal + i);
+  }
+  irsend->sendRaw(irSignal, length, khz);
+}
+
 
 
 void loop()
@@ -88,7 +98,7 @@ void checkSerial()
     switch (command[2])
     {
       case 0:
-       
+        
         turnOff();
         break;
       case 1:
