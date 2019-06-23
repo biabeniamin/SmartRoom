@@ -74,7 +74,18 @@ void sendIrSignal(const uint16_t PROGMEM *signal, int length)
   irsend->sendRaw(irSignal, length, khz);
 }
 
-
+void turnOnAc()
+{
+  sendIrSignal(irSignal, sizeof(irSignal) / sizeof(irSignal[0]));
+  //irsend->sendRaw(irSignal, sizeof(irSignal) / sizeof(irSignal[0]), khz);
+  state = 1;
+}
+void turnOffAc()
+{
+  sendIrSignal(irSignalTurnOff, sizeof(irSignalTurnOff) / sizeof(irSignalTurnOff[0]));
+  //irsend->sendRaw(irSignalTurnOff, sizeof(irSignalTurnOff) / sizeof(irSignalTurnOff[0]), khz);
+  state = 0;
+}
 
 void loop()
 {
@@ -98,11 +109,11 @@ void checkSerial()
     switch (command[2])
     {
       case 0:
-        
+        turnOffAc();
         turnOff();
         break;
       case 1:
-        
+        turnOnAc();
         turnOn();
         //startTime = timer->GetUpTime()->GetTotalMiliSeconds();
         //timer->RegisterEvent(command[3] * 1000, turnOff);
