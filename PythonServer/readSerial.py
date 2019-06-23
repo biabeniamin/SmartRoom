@@ -208,6 +208,10 @@ def remoteCommand(command, arguments):
 		roomLan.switchAc()
 	elif command == REMOTE_COMMANDS.ALERT.value:
 		alerts.alert(arguments[0])
+	elif command == REMOTE_COMMANDS.TURN_ON_AC.value:
+		roomLan.turnOnAc()
+	elif command == REMOTE_COMMANDS.TURN_OFF_AC.value:
+		roomLan.turnOffAc()
 
 def newTcpSocketClient(message, arguments):
 	print(message, arguments)

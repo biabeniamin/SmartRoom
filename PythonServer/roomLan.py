@@ -27,6 +27,16 @@ def switchAc():
 	print("Switch ac")
 	sendNormalCommand(request)
 
+def turnOnAc():
+	request = [8,4,1,0,0]
+	print("Turn on ac")
+	sendNormalCommand(request)
+
+def turnOffAc():
+	request = [8,4,0,0,0]
+	print("Turn on ac")
+	sendNormalCommand(request)
+
 def alertLight(seconds):
 	#send to giroscop
 	request = [8,4,1,seconds,0]
