@@ -212,6 +212,8 @@ def remoteCommand(command, arguments):
 		roomLan.turnOnAc()
 	elif command == REMOTE_COMMANDS.TURN_OFF_AC.value:
 		roomLan.turnOffAc()
+	elif command == REMOTE_COMMANDS.FAST_MODE_AC.value:
+		roomLan.fastModeAc()
 
 def newTcpSocketClient(message, arguments):
 	print(message, arguments)

@@ -37,6 +37,11 @@ def turnOffAc():
 	print("Turn on ac")
 	sendNormalCommand(request)
 
+def fastModeAc():
+	request = [8,4,3,0,0]
+	print("Fast Mode ac")
+	sendNormalCommand(request)
+
 def alertLight(seconds):
 	#send to giroscop
 	request = [8,4,1,seconds,0]
