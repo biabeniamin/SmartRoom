@@ -216,3 +216,145 @@ BYTE Spotify::IsAdsPlaying()
 
 	return 0;
 }
+
+
+HRESULT Spotify::GetAudioEndpointVolume(IAudioEndpointVolume **ppAudioEndpointVolume)
+{
+	HRESULT hr;
+
+
+
+	hr = S_OK;
+
+	hr = CoInitialize(NULL);
+	if (FAILED(hr)) {
+		LOG(L"CoInitialize failed: hr = 0x%08x", hr);
+		return -__LINE__;
+	}
+
+	// get default device
+	CComPtr<IMMDeviceEnumerator> pMMDeviceEnumerator;
+	hr = pMMDeviceEnumerator.CoCreateInstance(__uuidof(MMDeviceEnumerator));
+	if (FAILED(hr)) {
+		LOG(L"CoCreateInstance(IMMDeviceEnumerator) failed: hr = 0x%08x", hr);
+		return -__LINE__;
+	}
+
+	EDataFlow flows[] = { eRender };
+
+	for (UINT f = 0; f < ARRAYSIZE(flows); f++) {
+
+		CComPtr<IMMDeviceCollection> pMMDeviceCollection;
+		hr = pMMDeviceEnumerator->EnumAudioEndpoints(flows[f], DEVICE_STATE_ACTIVE, &pMMDeviceCollection);
+		if (FAILED(hr)) {
+			LOG(L"IMMDeviceEnumerator::EnumAudioEndpoints failed: hr = 0x%08x", hr);
+			continue;
+		}
+
+		UINT32 nDevices;
+		hr = pMMDeviceCollection->GetCount(&nDevices);
+		if (FAILED(hr)) {
+			LOG(L"IMMDeviceCollection::GetCount failed: hr = 0x%08x", hr);
+			continue;
+		}
+
+		for (UINT32 d = 0; d < nDevices; d++) {
+			CComPtr<IMMDevice> pMMDevice;
+			hr = pMMDeviceCollection->Item(d, &pMMDevice);
+			if (FAILED(hr)) {
+				LOG(L"IMMDeviceCollection::Item failed: hr = 0x%08x", hr);
+				continue;
+			}
+
+			// get the name of the endpoint
+			CComPtr<IPropertyStore> pPropertyStore;
+			hr = pMMDevice->OpenPropertyStore(STGM_READ, &pPropertyStore);
+			if (FAILED(hr)) {
+				LOG(L"IMMDevice::OpenPropertyStore failed: hr = 0x%08x", hr);
+				continue;
+			}
+
+			PROPVARIANT v; PropVariantInit(&v);
+			hr = pPropertyStore->GetValue(PKEY_Device_FriendlyName, &v);
+			if (FAILED(hr)) {
+				LOG(L"IPropertyStore::GetValue(PKEY_Device_FriendlyName) failed: hr = 0x%08x", hr);
+				continue;
+			}
+
+			if (VT_LPWSTR != v.vt) {
+				LOG(L"PKEY_Device_FriendlyName has unexpected vartype %u", v.vt);
+				continue;
+			}
+
+			// get the current audio peak meter level for this endpoint
+			CComPtr<IAudioMeterInformation> pAudioMeterInformation_Endpoint;
+			hr = pMMDevice->Activate(
+				__uuidof(IAudioMeterInformation),
+				CLSCTX_ALL,
+				NULL,
+				reinterpret_cast<void**>(&pAudioMeterInformation_Endpoint)
+			);
+			if (FAILED(hr)) {
+				LOG(L"IMMDevice::Activate(IAudioMeterInformation) failed: hr = 0x%08x", hr);
+				continue;
+			}
+
+			float peak_endpoint = 0.0f;
+			hr = pAudioMeterInformation_Endpoint->GetPeakValue(&peak_endpoint);
+			if (FAILED(hr)) {
+				LOG(L"IAudioMeterInformation::GetPeakValue() failed: hr = 0x%08x", hr);
+				continue;
+			}
+
+			// get an endpoint volume interface
+			CComPtr<IAudioEndpointVolume> pAudioEndpointVolume;
+			hr = pMMDevice->Activate(
+				__uuidof(IAudioEndpointVolume),
+				CLSCTX_ALL,
+				nullptr,
+				reinterpret_cast<void **>(&pAudioEndpointVolume)
+			);
+			if (FAILED(hr)) {
+				LOG(L"IMMDevice::Activate(IAudioEndpointVolume) failed: hr = 0x%08x", hr);
+				continue;
+			}
+
+			BOOL mute;
+			hr = pAudioEndpointVolume->GetMute(&mute);
+			if (FAILED(hr)) {
+				LOG(L"IAudioEndpointVolume::GetMute failed: hr = 0x%08x", hr);
+				continue;
+			}
+
+
+			float pctMaster;
+			hr = pAudioEndpointVolume->GetMasterVolumeLevelScalar(&pctMaster);
+			if (FAILED(hr)) {
+				LOG(L"IAudioEndpointVolume::GetMasterVolumeLevelScalar failed: hr = 0x%08x", hr);
+				continue;
+			}
+
+			float dbMaster;
+			hr = pAudioEndpointVolume->GetMasterVolumeLevel(&dbMaster);
+			if (FAILED(hr)) {
+				LOG(L"IAudioEndpointVolume::GetMasterVolumeLevel failed: hr = 0x%08x", hr);
+				continue;
+			}
+			if (StrCmpW(v.pwszVal, L"Speakers (SB Audigy)"))
+				continue;
+
+			LOG(
+				L"%s\n"
+				L"    Peak: %g\n"
+				L"    Mute: %d\n"
+				L"    Master: %g%% (%g dB)",
+				v.pwszVal,
+				peak_endpoint,
+				mute,
+				pctMaster * 100.0f, dbMaster
+			);
+
+		} // device
+	}
+	return hr;
+}
