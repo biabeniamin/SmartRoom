@@ -286,73 +286,7 @@ HRESULT Spotify::GetAudioEndpointVolume(IAudioEndpointVolume **ppAudioEndpointVo
 				continue;
 			}
 
-			// get the current audio peak meter level for this endpoint
-			CComPtr<IAudioMeterInformation> pAudioMeterInformation_Endpoint;
-			hr = pMMDevice->Activate(
-				__uuidof(IAudioMeterInformation),
-				CLSCTX_ALL,
-				NULL,
-				reinterpret_cast<void**>(&pAudioMeterInformation_Endpoint)
-			);
-			if (FAILED(hr)) {
-				LOG(L"IMMDevice::Activate(IAudioMeterInformation) failed: hr = 0x%08x", hr);
-				continue;
-			}
-
-			float peak_endpoint = 0.0f;
-			hr = pAudioMeterInformation_Endpoint->GetPeakValue(&peak_endpoint);
-			if (FAILED(hr)) {
-				LOG(L"IAudioMeterInformation::GetPeakValue() failed: hr = 0x%08x", hr);
-				continue;
-			}
-
-			// get an endpoint volume interface
-			CComPtr<IAudioEndpointVolume> pAudioEndpointVolume;
-			hr = pMMDevice->Activate(
-				__uuidof(IAudioEndpointVolume),
-				CLSCTX_ALL,
-				nullptr,
-				reinterpret_cast<void **>(&pAudioEndpointVolume)
-			);
-			if (FAILED(hr)) {
-				LOG(L"IMMDevice::Activate(IAudioEndpointVolume) failed: hr = 0x%08x", hr);
-				continue;
-			}
-
-			BOOL mute;
-			hr = pAudioEndpointVolume->GetMute(&mute);
-			if (FAILED(hr)) {
-				LOG(L"IAudioEndpointVolume::GetMute failed: hr = 0x%08x", hr);
-				continue;
-			}
-
-
-			float pctMaster;
-			hr = pAudioEndpointVolume->GetMasterVolumeLevelScalar(&pctMaster);
-			if (FAILED(hr)) {
-				LOG(L"IAudioEndpointVolume::GetMasterVolumeLevelScalar failed: hr = 0x%08x", hr);
-				continue;
-			}
-
-			float dbMaster;
-			hr = pAudioEndpointVolume->GetMasterVolumeLevel(&dbMaster);
-			if (FAILED(hr)) {
-				LOG(L"IAudioEndpointVolume::GetMasterVolumeLevel failed: hr = 0x%08x", hr);
-				continue;
-			}
-			if (StrCmpW(v.pwszVal, L"Speakers (SB Audigy)"))
-				continue;
-
-			LOG(
-				L"%s\n"
-				L"    Peak: %g\n"
-				L"    Mute: %d\n"
-				L"    Master: %g%% (%g dB)",
-				v.pwszVal,
-				peak_endpoint,
-				mute,
-				pctMaster * 100.0f, dbMaster
-			);
+			
 
 		} // device
 	}
