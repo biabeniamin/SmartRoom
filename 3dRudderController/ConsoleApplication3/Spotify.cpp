@@ -286,7 +286,27 @@ HRESULT Spotify::GetAudioEndpointVolume(IAudioEndpointVolume **ppAudioEndpointVo
 				continue;
 			}
 
-			
+			// get the current audio peak meter level for this endpoint
+			CComPtr<IAudioMeterInformation> pAudioMeterInformation_Endpoint;
+			hr = pMMDevice->Activate(
+				__uuidof(IAudioMeterInformation),
+				CLSCTX_ALL,
+				NULL,
+				reinterpret_cast<void**>(&pAudioMeterInformation_Endpoint)
+			);
+			if (FAILED(hr)) {
+				LOG(L"IMMDevice::Activate(IAudioMeterInformation) failed: hr = 0x%08x", hr);
+				continue;
+			}
+
+			float peak_endpoint = 0.0f;
+			hr = pAudioMeterInformation_Endpoint->GetPeakValue(&peak_endpoint);
+			if (FAILED(hr)) {
+				LOG(L"IAudioMeterInformation::GetPeakValue() failed: hr = 0x%08x", hr);
+				continue;
+			}
+
+		
 
 		} // device
 	}
