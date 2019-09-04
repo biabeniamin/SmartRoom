@@ -306,7 +306,27 @@ HRESULT Spotify::GetAudioEndpointVolume(IAudioEndpointVolume **ppAudioEndpointVo
 				continue;
 			}
 
-		
+			// get an endpoint volume interface
+			CComPtr<IAudioEndpointVolume> pAudioEndpointVolume;
+			hr = pMMDevice->Activate(
+				__uuidof(IAudioEndpointVolume),
+				CLSCTX_ALL,
+				nullptr,
+				reinterpret_cast<void **>(&pAudioEndpointVolume)
+			);
+			if (FAILED(hr)) {
+				LOG(L"IMMDevice::Activate(IAudioEndpointVolume) failed: hr = 0x%08x", hr);
+				continue;
+			}
+
+			BOOL mute;
+			hr = pAudioEndpointVolume->GetMute(&mute);
+			if (FAILED(hr)) {
+				LOG(L"IAudioEndpointVolume::GetMute failed: hr = 0x%08x", hr);
+				continue;
+			}
+
+
 
 		} // device
 	}
