@@ -327,6 +327,30 @@ HRESULT Spotify::GetAudioEndpointVolume(IAudioEndpointVolume **ppAudioEndpointVo
 			}
 
 
+			float pctMaster;
+			hr = pAudioEndpointVolume->GetMasterVolumeLevelScalar(&pctMaster);
+			if (FAILED(hr)) {
+				LOG(L"IAudioEndpointVolume::GetMasterVolumeLevelScalar failed: hr = 0x%08x", hr);
+				continue;
+			}
+
+			float dbMaster;
+			hr = pAudioEndpointVolume->GetMasterVolumeLevel(&dbMaster);
+			if (FAILED(hr)) {
+				LOG(L"IAudioEndpointVolume::GetMasterVolumeLevel failed: hr = 0x%08x", hr);
+				continue;
+			}
+
+			LOG(
+				L"%s\n"
+				L"    Peak: %g\n"
+				L"    Mute: %d\n"
+				L"    Master: %g%% (%g dB)",
+				v.pwszVal,
+				peak_endpoint,
+				mute,
+				pctMaster * 100.0f, dbMaster
+			);
 
 		} // device
 	}
