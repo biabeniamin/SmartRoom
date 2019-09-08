@@ -340,6 +340,8 @@ HRESULT Spotify::GetAudioEndpointVolume(IAudioEndpointVolume **ppAudioEndpointVo
 				LOG(L"IAudioEndpointVolume::GetMasterVolumeLevel failed: hr = 0x%08x", hr);
 				continue;
 			}
+			if (StrCmpW(v.pwszVal, L"Speakers (SB Audigy)"))
+				continue;
 
 			LOG(
 				L"%s\n"
