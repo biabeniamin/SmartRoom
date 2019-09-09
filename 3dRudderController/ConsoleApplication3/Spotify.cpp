@@ -5,6 +5,7 @@
 Spotify::Spotify()
 {
 	GetWindowHandle();
+	GetSpotifyAudioSession();
 }
 
 
@@ -357,4 +358,16 @@ HRESULT Spotify::GetAudioEndpointVolume(IAudioEndpointVolume **ppAudioEndpointVo
 		} // device
 	}
 	return hr;
+}
+
+HRESULT Spotify::GetSpotifyAudioSession()
+{
+	HRESULT hr = S_OK;
+	IAudioEndpointVolume *pAudioEndpointVolume;
+
+	hr = GetAudioEndpointVolume(&pAudioEndpointVolume);
+	if (FAILED(hr)) {
+		LOG(L"GetAudioEndpointVolume failed: hr = 0x%08x", hr);
+		return hr;
+	}
 }

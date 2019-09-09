@@ -36,6 +36,7 @@ private:
 	BYTE Contanins(PWCHAR Text,
 		PCWCHAR Contained);
 	HRESULT GetAudioEndpointVolume(IAudioEndpointVolume **ppAudioEndpointVolume);
+	HRESULT GetSpotifyAudioSession();
 
 	HWND _spotifyWindow;
 };
