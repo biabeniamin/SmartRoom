@@ -35,7 +35,7 @@ private:
 	void GetAllWindowsFromProcessID(DWORD DWProcessID);
 	BYTE Contanins(PWCHAR Text,
 		PCWCHAR Contained);
-	HRESULT GetAudioEndpointVolume(IAudioEndpointVolume **ppAudioEndpointVolume);
+	HRESULT GetAudioSessionEnumerator(IAudioSessionEnumerator **ppAudioSessionEnumerator);
 	HRESULT GetSpotifyAudioSession();
 
 	HWND _spotifyWindow;
