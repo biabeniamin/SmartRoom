@@ -523,7 +523,24 @@ HRESULT Spotify::GetSpotifyAudioSession()
 			return -__LINE__;
 		}
 
-		
+		float fMasterVolume;
+		hr = pSimpleAudioVolume->GetMasterVolume(&fMasterVolume);
+		//pSimpleAudioVolume->SetMasterVolume(0, NULL);
+		if (FAILED(hr)) {
+			LOG(L"ISimpleAudioVolume::GetMasterVolume failed: hr = 0x%08x", hr);
+			return -__LINE__;
+		}
+		LOG(L"        Master volume: %g", fMasterVolume);
+
+		BOOL bMute;
+		hr = pSimpleAudioVolume->GetMute(&bMute);
+		if (FAILED(hr)) {
+			LOG(L"ISimpleAudioVolume::GetMute failed: hr = 0x%08x", hr);
+			return -__LINE__;
+		}
+		LOG(L"        %s", (bMute ? L"Muted" : L"Not muted"));
+
+
 
 		LOG(L"");
 	}
