@@ -219,7 +219,7 @@ BYTE Spotify::IsAdsPlaying()
 }
 
 
-HRESULT Spotify::GetAudioSessionEnumerator(IAudioSessionEnumerator **ppAudioSessionEnumerator)
+HRESULT Spotify::GetAudioSessionEnumerator()
 {
 	HRESULT hr;
 
@@ -264,6 +264,7 @@ HRESULT Spotify::GetAudioSessionEnumerator(IAudioSessionEnumerator **ppAudioSess
 				LOG(L"IMMDeviceCollection::Item failed: hr = 0x%08x", hr);
 				continue;
 			}
+			_pMMDevice = pMMDevice;
 
 			// get the name of the endpoint
 			CComPtr<IPropertyStore> pPropertyStore;
@@ -317,6 +318,7 @@ HRESULT Spotify::GetAudioSessionEnumerator(IAudioSessionEnumerator **ppAudioSess
 				LOG(L"IMMDevice::Activate(IAudioEndpointVolume) failed: hr = 0x%08x", hr);
 				continue;
 			}
+			_pAudioEndpointVolume = pAudioEndpointVolume;
 
 			BOOL mute;
 			hr = pAudioEndpointVolume->GetMute(&mute);
@@ -365,6 +367,7 @@ HRESULT Spotify::GetAudioSessionEnumerator(IAudioSessionEnumerator **ppAudioSess
 				LOG(L"IMMDevice::Activate(IAudioSessionManager2) failed: hr = 0x%08x", hr);
 				return -__LINE__;
 			}
+			_pAudioSessionManager2 = pAudioSessionManager2;
 
 			CComPtr<IAudioSessionEnumerator> pAudioSessionEnumerator;
 			hr = pAudioSessionManager2->GetSessionEnumerator(&pAudioSessionEnumerator);
@@ -372,8 +375,27 @@ HRESULT Spotify::GetAudioSessionEnumerator(IAudioSessionEnumerator **ppAudioSess
 				LOG(L"IAudioSessionManager2::GetSessionEnumerator() failed: hr = 0x%08x", hr);
 				return -__LINE__;
 			}
+			_pAudioSessionEnumerator = pAudioSessionEnumerator;
 
-			*ppAudioSessionEnumerator = pAudioSessionEnumerator;
+			// iterate over all the sessions
+			int count = 0;
+			hr = pAudioSessionEnumerator->GetCount(&count);
+			if (FAILED(hr)) {
+				LOG(L"IAudioSessionEnumerator::GetCount() failed: hr = 0x%08x", hr);
+				return -__LINE__;
+			}
+
+			for (int session = 0; session < count; session++) {
+				// get the session identifier
+				CComPtr<IAudioSessionControl> pAudioSessionControl;
+				hr = pAudioSessionEnumerator->GetSession(session, &pAudioSessionControl);
+				if (FAILED(hr)) {
+					LOG(L"IAudioSessionEnumerator::GetSession() failed: hr = 0x%08x", hr);
+					return -__LINE__;
+				}
+			}
+
+			return hr;
 		} // device
 	}
 	return hr;
@@ -382,12 +404,33 @@ HRESULT Spotify::GetAudioSessionEnumerator(IAudioSessionEnumerator **ppAudioSess
 HRESULT Spotify::GetSpotifyAudioSession()
 {
 	HRESULT hr = S_OK;
-	IAudioSessionEnumerator *pAudioSessionEnumerator;
 
-	hr = GetAudioSessionEnumerator(&pAudioSessionEnumerator);
+	hr = GetAudioSessionEnumerator();
 	if (FAILED(hr)) {
 		LOG(L"GetAudioEndpointVolume failed: hr = 0x%08x", hr);
 		return hr;
+	}
+
+	CComPtr<IAudioSessionEnumerator> pAudioSessionEnumerator;
+	pAudioSessionEnumerator = _pAudioSessionEnumerator;
+
+	// iterate over all the sessions
+	int count = 0;
+	hr = pAudioSessionEnumerator->GetCount(&count);
+	if (FAILED(hr)) {
+		LOG(L"IAudioSessionEnumerator::GetCount() failed: hr = 0x%08x", hr);
+		return -__LINE__;
+	}
+
+	for (int session = 0; session < count; session++) {
+		// get the session identifier
+		CComPtr<IAudioSessionControl> pAudioSessionControl;
+		hr = pAudioSessionEnumerator->GetSession(session, &pAudioSessionControl);
+		if (FAILED(hr)) {
+			LOG(L"IAudioSessionEnumerator::GetSession() failed: hr = 0x%08x", hr);
+			return -__LINE__;
+		}
+	
 	}
 
 
