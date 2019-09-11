@@ -472,48 +472,23 @@ HRESULT Spotify::GetSpotifyAudioSession()
 		}
 
 
+		CComHeapPtr<WCHAR> szSessionIdentifier;
+		hr = pAudioSessionControl2->GetSessionIdentifier(&szSessionIdentifier);
+		if (FAILED(hr)) {
+			LOG(L"IAudioSessionControl2::GetSessionIdentifier() failed: hr = 0x%08x", hr);
+			return -__LINE__;
+		}
 
 		LOG(
 			L"        Peak value: %g\n"
 			L"        Process ID: %u%s\n"
+			L"        Session identifier: %s\n"
 			,
 			peak_session,
-			pid, (bMultiProcess ? L" (multi-process)" : L" (single-process)")
+			pid, (bMultiProcess ? L" (multi-process)" : L" (single-process)"),
+			static_cast<LPCWSTR>(szSessionIdentifier)
 		);
 
-		// get the package full name (if this is a Windows Store app)
-		// or the window text of all the top-level Windows (if this is a desktop app)
-		HANDLE h = OpenProcess(PROCESS_QUERY_LIMITED_INFORMATION, FALSE, pid);
-		if (NULL == h) {
-			LOG(L"OpenProcess failed: error = %u", GetLastError());
-			return -__LINE__;
-		}
-
-		UINT32 chars = 0;
-		LONG result = GetPackageFullName(h, &chars, NULL);
-		switch (result) {
-		case ERROR_INSUFFICIENT_BUFFER: {
-			CComHeapPtr<WCHAR> packageFullName;
-			if (!packageFullName.Allocate(chars)) {
-				LOG(L"Allocate failed");
-				return -__LINE__;
-			}
-
-			result = GetPackageFullName(h, &chars, packageFullName);
-			if (ERROR_SUCCESS != result) {
-				LOG(L"Unexpected return code from GetPackageFullName: %u", result);
-				return -__LINE__;
-			}
-
-			LOG(L"        Package full name: %s", static_cast<LPCWSTR>(packageFullName));
-			break;
-		}
-
-		default: {
-			LOG(L"Unexpected return code from GetPackageFullName: %u", result);
-			return -__LINE__;
-		}
-		}
 
 		// query the volumes
 		CComPtr<ISimpleAudioVolume> pSimpleAudioVolume;
