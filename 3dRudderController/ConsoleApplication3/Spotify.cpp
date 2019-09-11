@@ -479,6 +479,9 @@ HRESULT Spotify::GetSpotifyAudioSession()
 			return -__LINE__;
 		}
 
+		if(!Contanins(szSessionIdentifier, L"Spotify"))
+			continue;
+
 		LOG(
 			L"        Peak value: %g\n"
 			L"        Process ID: %u%s\n"
