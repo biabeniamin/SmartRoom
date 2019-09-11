@@ -515,6 +515,17 @@ HRESULT Spotify::GetSpotifyAudioSession()
 		}
 		}
 
+		// query the volumes
+		CComPtr<ISimpleAudioVolume> pSimpleAudioVolume;
+		hr = pAudioSessionControl->QueryInterface(IID_PPV_ARGS(&pSimpleAudioVolume));
+		if (FAILED(hr)) {
+			LOG(L"IAudioSessionControl::QueryInterface(ISimpleAudioVolume) failed: hr = 0x%08x", hr);
+			return -__LINE__;
+		}
+
+		
+
+		LOG(L"");
 	}
 
 
