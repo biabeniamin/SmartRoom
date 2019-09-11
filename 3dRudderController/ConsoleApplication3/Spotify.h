@@ -29,6 +29,8 @@ public:
 	BYTE IsPlaying();
 	void GetCurrentTrack(PWCHAR, int);
 	BYTE IsAdsPlaying();
+	void Mute();
+	void Unmute();
 
 private:
 	void GetWindowHandle();
@@ -43,5 +45,6 @@ private:
 	CComPtr<IAudioEndpointVolume> _pAudioEndpointVolume;
 	CComPtr<IAudioSessionManager2> _pAudioSessionManager2;
 	CComPtr<IAudioSessionEnumerator> _pAudioSessionEnumerator;
+	CComPtr<ISimpleAudioVolume> _pSpotifySimpleAudioVolume;
 };
 

@@ -500,6 +500,7 @@ HRESULT Spotify::GetSpotifyAudioSession()
 			LOG(L"IAudioSessionControl::QueryInterface(ISimpleAudioVolume) failed: hr = 0x%08x", hr);
 			return -__LINE__;
 		}
+		_pSpotifySimpleAudioVolume = pSimpleAudioVolume;
 
 		float fMasterVolume;
 		hr = pSimpleAudioVolume->GetMasterVolume(&fMasterVolume);
@@ -524,4 +525,14 @@ HRESULT Spotify::GetSpotifyAudioSession()
 	}
 
 
+}
+
+void Spotify::Mute()
+{
+	_pSpotifySimpleAudioVolume->SetMute(TRUE, NULL);
+}
+
+void Spotify::Unmute()
+{
+	_pSpotifySimpleAudioVolume->SetMute(FALSE, NULL);
 }
