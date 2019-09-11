@@ -210,10 +210,10 @@ BYTE Spotify::IsAdsPlaying()
 	{
 		return 1;
 	}
-	/*else if (Contanins(text, L"Spotify"))
+	else if (Contanins(text, L"Spotify"))
 	{
 		return 1;
-	}*/
+	}
 
 	return 0;
 }
@@ -464,13 +464,13 @@ HRESULT Spotify::GetSpotifyAudioSession()
 			LOG(L"IAudioSessionControl::QueryInterface(IAudioMeterInformation) failed: hr = 0x%08x", hr);
 			return -__LINE__;
 		}
+		_pAudioMeterInformation_Session = pAudioMeterInformation_Session;
 		float peak_session = 0.0f;
 		hr = pAudioMeterInformation_Session->GetPeakValue(&peak_session);
 		if (FAILED(hr)) {
 			LOG(L"IAudioMeterInformation::GetPeakValue() failed: hr = 0x%08x", hr);
 			return -__LINE__;
 		}
-
 
 		CComHeapPtr<WCHAR> szSessionIdentifier;
 		hr = pAudioSessionControl2->GetSessionIdentifier(&szSessionIdentifier);
@@ -535,4 +535,12 @@ void Spotify::Mute()
 void Spotify::Unmute()
 {
 	_pSpotifySimpleAudioVolume->SetMute(FALSE, NULL);
+}
+
+float Spotify::DoesProduceSound()
+{
+	float peak_session = 0.0f;
+	_pAudioMeterInformation_Session->GetPeakValue(&peak_session);
+
+	return peak_session;
 }

@@ -31,6 +31,7 @@ public:
 	BYTE IsAdsPlaying();
 	void Mute();
 	void Unmute();
+	float DoesProduceSound();
 
 private:
 	void GetWindowHandle();
@@ -46,5 +47,6 @@ private:
 	CComPtr<IAudioSessionManager2> _pAudioSessionManager2;
 	CComPtr<IAudioSessionEnumerator> _pAudioSessionEnumerator;
 	CComPtr<ISimpleAudioVolume> _pSpotifySimpleAudioVolume;
+	CComPtr<IAudioMeterInformation> _pAudioMeterInformation_Session;
 };
 
