@@ -457,6 +457,30 @@ HRESULT Spotify::GetSpotifyAudioSession()
 
 		bool bMultiProcess = (AUDCLNT_S_NO_SINGLE_PROCESS == hr);
 
+		// get the current audio peak meter level for this session
+		CComPtr<IAudioMeterInformation> pAudioMeterInformation_Session;
+		hr = pAudioSessionControl->QueryInterface(IID_PPV_ARGS(&pAudioMeterInformation_Session));
+		if (FAILED(hr)) {
+			LOG(L"IAudioSessionControl::QueryInterface(IAudioMeterInformation) failed: hr = 0x%08x", hr);
+			return -__LINE__;
+		}
+		float peak_session = 0.0f;
+		hr = pAudioMeterInformation_Session->GetPeakValue(&peak_session);
+		if (FAILED(hr)) {
+			LOG(L"IAudioMeterInformation::GetPeakValue() failed: hr = 0x%08x", hr);
+			return -__LINE__;
+		}
+
+
+
+		LOG(
+			L"        Peak value: %g\n"
+			L"        Process ID: %u%s\n"
+			,
+			peak_session,
+			pid, (bMultiProcess ? L" (multi-process)" : L" (single-process)")
+		);
+
 	}
 
 
