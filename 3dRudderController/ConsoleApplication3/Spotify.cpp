@@ -212,7 +212,10 @@ BYTE Spotify::IsAdsPlaying()
 	}
 	else if (Contanins(text, L"Spotify"))
 	{
-		return 1;
+		float peakVolume = DoesProduceSound();
+		if(peakVolume > 0)
+			return 1;
+		return 0;
 	}
 
 	return 0;
