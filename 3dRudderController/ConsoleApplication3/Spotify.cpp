@@ -481,6 +481,40 @@ HRESULT Spotify::GetSpotifyAudioSession()
 			pid, (bMultiProcess ? L" (multi-process)" : L" (single-process)")
 		);
 
+		// get the package full name (if this is a Windows Store app)
+		// or the window text of all the top-level Windows (if this is a desktop app)
+		HANDLE h = OpenProcess(PROCESS_QUERY_LIMITED_INFORMATION, FALSE, pid);
+		if (NULL == h) {
+			LOG(L"OpenProcess failed: error = %u", GetLastError());
+			return -__LINE__;
+		}
+
+		UINT32 chars = 0;
+		LONG result = GetPackageFullName(h, &chars, NULL);
+		switch (result) {
+		case ERROR_INSUFFICIENT_BUFFER: {
+			CComHeapPtr<WCHAR> packageFullName;
+			if (!packageFullName.Allocate(chars)) {
+				LOG(L"Allocate failed");
+				return -__LINE__;
+			}
+
+			result = GetPackageFullName(h, &chars, packageFullName);
+			if (ERROR_SUCCESS != result) {
+				LOG(L"Unexpected return code from GetPackageFullName: %u", result);
+				return -__LINE__;
+			}
+
+			LOG(L"        Package full name: %s", static_cast<LPCWSTR>(packageFullName));
+			break;
+		}
+
+		default: {
+			LOG(L"Unexpected return code from GetPackageFullName: %u", result);
+			return -__LINE__;
+		}
+		}
+
 	}
 
 
