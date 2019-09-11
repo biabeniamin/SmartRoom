@@ -430,7 +430,33 @@ HRESULT Spotify::GetSpotifyAudioSession()
 			LOG(L"IAudioSessionEnumerator::GetSession() failed: hr = 0x%08x", hr);
 			return -__LINE__;
 		}
-	
+		AudioSessionState state;
+		hr = pAudioSessionControl->GetState(&state);
+		if (FAILED(hr)) {
+			LOG(L"IAudioSessionControl::GetState() failed: hr = 0x%08x", hr);
+			return -__LINE__;
+		}
+		if (AudioSessionStateActive != state) {
+			// skip this session
+			continue;
+		}
+
+		CComPtr<IAudioSessionControl2> pAudioSessionControl2;
+		hr = pAudioSessionControl->QueryInterface(IID_PPV_ARGS(&pAudioSessionControl2));
+		if (FAILED(hr)) {
+			LOG(L"IAudioSessionControl::QueryInterface(IAudioSessionControl2) failed: hr = 0x%08x", hr);
+			return -__LINE__;
+		}
+
+		DWORD pid = 0;
+		hr = pAudioSessionControl2->GetProcessId(&pid);
+		if (FAILED(hr)) {
+			LOG(L"IAudioSessionControl2::GetProcessId() failed: hr = 0x%08x", hr);
+			return -__LINE__;
+		}
+
+		bool bMultiProcess = (AUDCLNT_S_NO_SINGLE_PROCESS == hr);
+
 	}
 
 
