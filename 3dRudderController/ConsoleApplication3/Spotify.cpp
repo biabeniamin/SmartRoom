@@ -441,6 +441,7 @@ HRESULT Spotify::GetSpotifyAudioSession()
 		}
 		if (AudioSessionStateActive != state) {
 			// skip this session
+			hr = -__LINE__;
 			continue;
 		}
 
@@ -522,11 +523,13 @@ HRESULT Spotify::GetSpotifyAudioSession()
 		}
 		LOG(L"        %s", (bMute ? L"Muted" : L"Not muted"));
 
-
+		hr = S_OK;
+		break;
 
 		LOG(L"");
 	}
 
+	return hr;
 
 }
 
@@ -544,8 +547,14 @@ float Spotify::DoesProduceSound()
 {
 	float peak_session = 0.0f;
 	if (_pAudioMeterInformation_Session == NULL) {
-		LOG(L"_pAudioMeterInformation_Session is NULL");
-		return -__LINE__;
+		//try to get the session
+		HRESULT hr = S_OK;
+		hr = GetSpotifyAudioSession();
+		if (FAILED(hr))
+		{
+			LOG(L"_pAudioMeterInformation_Session is NULL");
+			return -__LINE__;
+		}
 	}
 	_pAudioMeterInformation_Session->GetPeakValue(&peak_session);
 
