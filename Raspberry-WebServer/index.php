@@ -202,6 +202,7 @@ if(isset($_GET["cmd"]))
 		<button onclick="performAction('commands.php?cmd=turnOnAc')" class="button">Turn on ac</Button>
 		<button onclick="performAction('commands.php?cmd=turnOffAc')" class="button">Turn off ac</Button>
 		<button onclick="performAction('commands.php?cmd=fastModeAc')" class="button">Fast Mode ac</Button>
+		<button onclick="performAction('commands.php?cmd=heatAc')" class="button">Heat ac</Button>
 		<button onclick="performAction('commands.php?cmd=alert&value=2')" class="button">Alert</Button>
 <br>
 
@@ -216,7 +217,11 @@ if(isset($_GET["cmd"]))
 			echo "Threshold Temperature: ".$thresholdTemperature."<br>";
 
 			$temperature=readAllFile("roomStatus/temperature");
+			$temperature2=readAllFile("roomStatus/temperature2");
+			$humidity=readAllFile("roomStatus/humidity");
 			echo "Temperature: ".$temperature."<br>";
+			echo "Temperature2: ".$temperature2."<br>";
+			echo "Humidity: ".$humidity."<br>";
 
 			$doorStatus=readAllFile("roomStatus/door");
 			if($doorStatus == 0)
