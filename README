@@ -1,0 +1,8 @@
+##Smart Room
+
+A bunch of useful devices which makes my life easier.
+
+#3dRudderController
+Is a c++ app developed with 3d rudder controller api to add different shortcuts. It is controlled by foots and can turn on light, unlock door and control music.
+
+Also, the app has a spotify add blocker. It uses microsoft api to get the name of app displayed in the task bar in order to detect if an app is playing. It also takes the spotify app in consideration, even if the app displays only spotify in this case. It uses Windows Audio core api to detect if app produces sound and to mute only spotify during ads.
