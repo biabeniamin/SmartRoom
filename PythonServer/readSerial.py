@@ -214,6 +214,9 @@ def remoteCommand(command, arguments):
 		roomLan.turnOffAc()
 	elif command == REMOTE_COMMANDS.FAST_MODE_AC.value:
 		roomLan.fastModeAc()
+	elif command == REMOTE_COMMANDS.HEAT_AC.value:
+		print("activate heat")
+		roomLan.heatAc()
 
 def newTcpSocketClient(message, arguments):
 	print(message, arguments)
