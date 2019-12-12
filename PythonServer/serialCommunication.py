@@ -9,6 +9,8 @@ pin = 17
 GPIO.setup(pin, GPIO.OUT)
 
 ports = glob.glob('/dev/ttyUSB*')
+if(len(ports) < 1):
+	print("No usb serial port detected")
 serial = serial.Serial(ports[0])    #Open named port 
 serial.baudrate = 9600
 
