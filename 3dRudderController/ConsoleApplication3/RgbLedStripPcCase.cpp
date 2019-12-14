@@ -4,7 +4,12 @@
 
 RgbLedStripPcCase::RgbLedStripPcCase()
 {
-	Initializing();
+	__try { 
+		Initializing();
+	}
+	__except (EXCEPTION_EXECUTE_HANDLER) {
+		printf("Cannot initalize led driver!\n");
+	};
 }
 
 
