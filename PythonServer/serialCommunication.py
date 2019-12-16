@@ -1,13 +1,17 @@
 import serial
 import RPi.GPIO as GPIO
 import os
+import glob
 
 GPIO.setwarnings(False)
 GPIO.setmode(GPIO.BCM)
 pin = 17
 GPIO.setup(pin, GPIO.OUT)
 
-serial = serial.Serial("/dev/ttyUSB0")    #Open named port 
+ports = glob.glob('/dev/ttyUSB*')
+if(len(ports) < 1):
+	print("No usb serial port detected")
+serial = serial.Serial(ports[0])    #Open named port 
 serial.baudrate = 9600
 
 

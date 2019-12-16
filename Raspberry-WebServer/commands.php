@@ -17,6 +17,7 @@
 		const TURN_ON_AC=13;
 		const TURN_OFF_AC=15;
 		const FAST_MODE_AC = 16;
+		const HEAT_AC = 17;
 	}
 	function sendCommandTwoParameters($command, $argument1, $argument2)
 	{
@@ -96,5 +97,9 @@
 	else if($_GET["cmd"]=="fastModeAc")
 	{
 		sendCommand(REMOTE_COMMANDS::FAST_MODE_AC, $argument);
+	}
+	else if($_GET["cmd"]=="heatAc")
+	{
+		sendCommand(REMOTE_COMMANDS::HEAT_AC, $argument);
 	}
 ?>
