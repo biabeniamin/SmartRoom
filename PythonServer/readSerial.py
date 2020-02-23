@@ -1,4 +1,5 @@
 import serialCommunication
+import tempMonitor
 import serial
 import sys
 import RPi.GPIO as GPIO
@@ -226,6 +227,7 @@ def newTcpSocketClient(message, arguments):
 start_new_thread(readSerial,())
 
 tcpSocketServer.startTcpSocketServerOnNewThread(newTcpSocketClient)
+tempMonitor.readTemperature()
 
 #set pin for motion sensor
 GPIO.setmode(GPIO.BCM)
@@ -237,8 +239,7 @@ workbenchLightBeforeLeaving=0
 lastTimePersonCame=0
 lastTimeMotionDetected=time.time()
 
-
-roomLan.setNixieClockTime()
+#roomLan.setNixieClockTime()
 
 while 1:
 	wasMotionDetected=GPIO.input(26)
