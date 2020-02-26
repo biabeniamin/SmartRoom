@@ -227,7 +227,8 @@ def newTcpSocketClient(message, arguments):
 start_new_thread(readSerial,())
 
 tcpSocketServer.startTcpSocketServerOnNewThread(newTcpSocketClient)
-tempMonitor.readTemperature()
+
+start_new_thread(tempMonitor.readTemperature,())
 
 #set pin for motion sensor
 GPIO.setmode(GPIO.BCM)
