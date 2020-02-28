@@ -32,10 +32,6 @@ def sendCommand(request):
 def sendNormalCommand(request):
 	print(request)
 	GPIO.output(pin, GPIO.HIGH)
-	print("serial")
-	print(type(b'\x09'))
-	print(type(chr(9)))
-	print(type(unichr(9)))
 
 	serial.write(chr(9))
 	serial.write(chr(5))
@@ -47,5 +43,4 @@ def sendNormalCommand(request):
 	serial.write(chr(request[3]))
 	serial.write(chr(request[4]))
 
-	os.system('gpio write 0 0');
 	GPIO.output(pin, GPIO.LOW)
