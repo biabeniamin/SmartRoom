@@ -240,7 +240,7 @@ workbenchLightBeforeLeaving=0
 lastTimePersonCame=0
 lastTimeMotionDetected=time.time()
 
-#roomLan.setNixieClockTime()
+roomLan.setNixieClockTime()
 
 while 1:
 	wasMotionDetected=GPIO.input(26)
