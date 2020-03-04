@@ -7,7 +7,6 @@
 	}
 </script>
 <?php
-	require 'header.php';
 	function readAllFile($filePath)
 	{
 		$f=fopen($filePath,"r");
