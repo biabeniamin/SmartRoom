@@ -59,6 +59,10 @@ void Spotify::GetAllWindowsFromProcessID(DWORD DWProcessID)
 	do
 	{
 		hCurWnd = FindWindowEx(NULL, hCurWnd, NULL, NULL);
+		if (hCurWnd == NULL)
+		{
+			wprintf(L"hCurWnd null\n");
+		}
 		DWORD dwProcessID = 0;
 		GetWindowThreadProcessId(hCurWnd, &dwProcessID);
 		if (dwProcessID == DWProcessID)
