@@ -539,11 +539,15 @@ HRESULT Spotify::GetSpotifyAudioSession()
 
 void Spotify::Mute()
 {
+	if (!_pSpotifySimpleAudioVolume)
+		return;
 	_pSpotifySimpleAudioVolume->SetMute(TRUE, NULL);
 }
 
 void Spotify::Unmute()
 {
+	if (!_pSpotifySimpleAudioVolume)
+		return;
 	_pSpotifySimpleAudioVolume->SetMute(FALSE, NULL);
 }
 
