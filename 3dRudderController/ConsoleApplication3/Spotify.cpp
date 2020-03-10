@@ -554,7 +554,7 @@ void Spotify::Unmute()
 float Spotify::DoesProduceSound()
 {
 	float peak_session = 0.0f;
-	if (_pAudioMeterInformation_Session == NULL) {
+	if (_pAudioMeterInformation_Session == NULL || _pSpotifySimpleAudioVolume == NULL) {
 		//try to get the session
 		HRESULT hr = S_OK;
 		hr = GetSpotifyAudioSession();
