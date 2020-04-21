@@ -43,6 +43,7 @@ void RgbLedStripPcCase::Initializing()
 	}
 
 	pfGetSdkVersion(SdkVer, 16);
+	return;
 	dwLedApiInitOK = pfInitApi();
 
 	if (dwLedApiInitOK == ERROR_INVALID_OPERATION)

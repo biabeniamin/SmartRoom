@@ -59,6 +59,10 @@ void Spotify::GetAllWindowsFromProcessID(DWORD DWProcessID)
 	do
 	{
 		hCurWnd = FindWindowEx(NULL, hCurWnd, NULL, NULL);
+		if (hCurWnd == NULL)
+		{
+			wprintf(L"hCurWnd null\n");
+		}
 		DWORD dwProcessID = 0;
 		GetWindowThreadProcessId(hCurWnd, &dwProcessID);
 		if (dwProcessID == DWProcessID)
@@ -253,6 +257,13 @@ HRESULT Spotify::GetAudioSessionEnumerator()
 			continue;
 		}
 
+		CComPtr<IMMDevice> pMMDeviceDefault;
+		hr = pMMDeviceEnumerator->GetDefaultAudioEndpoint(flows[f], eMultimedia, &pMMDeviceDefault);
+		if (FAILED(hr)) {
+			LOG(L"IMMDeviceEnumerator::EnumAudioEndpoints failed: hr = 0x%08x", hr);
+			continue;
+		}
+
 		UINT32 nDevices;
 		hr = pMMDeviceCollection->GetCount(&nDevices);
 		if (FAILED(hr)) {
@@ -260,146 +271,137 @@ HRESULT Spotify::GetAudioSessionEnumerator()
 			continue;
 		}
 
-		for (UINT32 d = 0; d < nDevices; d++) {
-			CComPtr<IMMDevice> pMMDevice;
-			hr = pMMDeviceCollection->Item(d, &pMMDevice);
+		CComPtr<IMMDevice> pMMDevice = pMMDeviceDefault;
+		_pMMDevice = pMMDevice;
+
+		// get the name of the endpoint
+		CComPtr<IPropertyStore> pPropertyStore;
+		hr = pMMDevice->OpenPropertyStore(STGM_READ, &pPropertyStore);
+		if (FAILED(hr)) {
+			LOG(L"IMMDevice::OpenPropertyStore failed: hr = 0x%08x", hr);
+			continue;
+		}
+
+		PROPVARIANT v; PropVariantInit(&v);
+		hr = pPropertyStore->GetValue(PKEY_Device_FriendlyName, &v);
+		if (FAILED(hr)) {
+			LOG(L"IPropertyStore::GetValue(PKEY_Device_FriendlyName) failed: hr = 0x%08x", hr);
+			continue;
+		}
+
+		if (VT_LPWSTR != v.vt) {
+			LOG(L"PKEY_Device_FriendlyName has unexpected vartype %u", v.vt);
+			continue;
+		}
+
+		// get the current audio peak meter level for this endpoint
+		CComPtr<IAudioMeterInformation> pAudioMeterInformation_Endpoint;
+		hr = pMMDevice->Activate(
+			__uuidof(IAudioMeterInformation),
+			CLSCTX_ALL,
+			NULL,
+			reinterpret_cast<void**>(&pAudioMeterInformation_Endpoint)
+		);
+		if (FAILED(hr)) {
+			LOG(L"IMMDevice::Activate(IAudioMeterInformation) failed: hr = 0x%08x", hr);
+			continue;
+		}
+
+		float peak_endpoint = 0.0f;
+		hr = pAudioMeterInformation_Endpoint->GetPeakValue(&peak_endpoint);
+		if (FAILED(hr)) {
+			LOG(L"IAudioMeterInformation::GetPeakValue() failed: hr = 0x%08x", hr);
+			continue;
+		}
+
+		// get an endpoint volume interface
+		CComPtr<IAudioEndpointVolume> pAudioEndpointVolume;
+		hr = pMMDevice->Activate(
+			__uuidof(IAudioEndpointVolume),
+			CLSCTX_ALL,
+			nullptr,
+			reinterpret_cast<void**>(&pAudioEndpointVolume)
+		);
+		if (FAILED(hr)) {
+			LOG(L"IMMDevice::Activate(IAudioEndpointVolume) failed: hr = 0x%08x", hr);
+			continue;
+		}
+		_pAudioEndpointVolume = pAudioEndpointVolume;
+
+		BOOL mute;
+		hr = pAudioEndpointVolume->GetMute(&mute);
+		if (FAILED(hr)) {
+			LOG(L"IAudioEndpointVolume::GetMute failed: hr = 0x%08x", hr);
+			continue;
+		}
+
+
+		float pctMaster;
+		hr = pAudioEndpointVolume->GetMasterVolumeLevelScalar(&pctMaster);
+		if (FAILED(hr)) {
+			LOG(L"IAudioEndpointVolume::GetMasterVolumeLevelScalar failed: hr = 0x%08x", hr);
+			continue;
+		}
+
+		float dbMaster;
+		hr = pAudioEndpointVolume->GetMasterVolumeLevel(&dbMaster);
+		if (FAILED(hr)) {
+			LOG(L"IAudioEndpointVolume::GetMasterVolumeLevel failed: hr = 0x%08x", hr);
+			continue;
+		}
+
+		LOG(
+			L"%s\n"
+			L"    Peak: %g\n"
+			L"    Mute: %d\n"
+			L"    Master: %g%% (%g dB)",
+			v.pwszVal,
+			peak_endpoint,
+			mute,
+			pctMaster * 100.0f, dbMaster
+		);
+
+		// get a session enumerator
+		CComPtr<IAudioSessionManager2> pAudioSessionManager2;
+		hr = pMMDevice->Activate(
+			__uuidof(IAudioSessionManager2),
+			CLSCTX_ALL,
+			nullptr,
+			reinterpret_cast<void**>(&pAudioSessionManager2)
+		);
+		if (FAILED(hr)) {
+			LOG(L"IMMDevice::Activate(IAudioSessionManager2) failed: hr = 0x%08x", hr);
+			return -__LINE__;
+		}
+		_pAudioSessionManager2 = pAudioSessionManager2;
+
+		CComPtr<IAudioSessionEnumerator> pAudioSessionEnumerator;
+		hr = pAudioSessionManager2->GetSessionEnumerator(&pAudioSessionEnumerator);
+		if (FAILED(hr)) {
+			LOG(L"IAudioSessionManager2::GetSessionEnumerator() failed: hr = 0x%08x", hr);
+			return -__LINE__;
+		}
+		_pAudioSessionEnumerator = pAudioSessionEnumerator;
+
+		// iterate over all the sessions
+		int count = 0;
+		hr = pAudioSessionEnumerator->GetCount(&count);
+		if (FAILED(hr)) {
+			LOG(L"IAudioSessionEnumerator::GetCount() failed: hr = 0x%08x", hr);
+			return -__LINE__;
+		}
+
+		for (int session = 0; session < count; session++) {
+			// get the session identifier
+			CComPtr<IAudioSessionControl> pAudioSessionControl;
+			hr = pAudioSessionEnumerator->GetSession(session, &pAudioSessionControl);
 			if (FAILED(hr)) {
-				LOG(L"IMMDeviceCollection::Item failed: hr = 0x%08x", hr);
-				continue;
-			}
-			_pMMDevice = pMMDevice;
-
-			// get the name of the endpoint
-			CComPtr<IPropertyStore> pPropertyStore;
-			hr = pMMDevice->OpenPropertyStore(STGM_READ, &pPropertyStore);
-			if (FAILED(hr)) {
-				LOG(L"IMMDevice::OpenPropertyStore failed: hr = 0x%08x", hr);
-				continue;
-			}
-
-			PROPVARIANT v; PropVariantInit(&v);
-			hr = pPropertyStore->GetValue(PKEY_Device_FriendlyName, &v);
-			if (FAILED(hr)) {
-				LOG(L"IPropertyStore::GetValue(PKEY_Device_FriendlyName) failed: hr = 0x%08x", hr);
-				continue;
-			}
-
-			if (VT_LPWSTR != v.vt) {
-				LOG(L"PKEY_Device_FriendlyName has unexpected vartype %u", v.vt);
-				continue;
-			}
-
-			// get the current audio peak meter level for this endpoint
-			CComPtr<IAudioMeterInformation> pAudioMeterInformation_Endpoint;
-			hr = pMMDevice->Activate(
-				__uuidof(IAudioMeterInformation),
-				CLSCTX_ALL,
-				NULL,
-				reinterpret_cast<void**>(&pAudioMeterInformation_Endpoint)
-			);
-			if (FAILED(hr)) {
-				LOG(L"IMMDevice::Activate(IAudioMeterInformation) failed: hr = 0x%08x", hr);
-				continue;
-			}
-
-			float peak_endpoint = 0.0f;
-			hr = pAudioMeterInformation_Endpoint->GetPeakValue(&peak_endpoint);
-			if (FAILED(hr)) {
-				LOG(L"IAudioMeterInformation::GetPeakValue() failed: hr = 0x%08x", hr);
-				continue;
-			}
-
-			// get an endpoint volume interface
-			CComPtr<IAudioEndpointVolume> pAudioEndpointVolume;
-			hr = pMMDevice->Activate(
-				__uuidof(IAudioEndpointVolume),
-				CLSCTX_ALL,
-				nullptr,
-				reinterpret_cast<void **>(&pAudioEndpointVolume)
-			);
-			if (FAILED(hr)) {
-				LOG(L"IMMDevice::Activate(IAudioEndpointVolume) failed: hr = 0x%08x", hr);
-				continue;
-			}
-			_pAudioEndpointVolume = pAudioEndpointVolume;
-
-			BOOL mute;
-			hr = pAudioEndpointVolume->GetMute(&mute);
-			if (FAILED(hr)) {
-				LOG(L"IAudioEndpointVolume::GetMute failed: hr = 0x%08x", hr);
-				continue;
-			}
-
-
-			float pctMaster;
-			hr = pAudioEndpointVolume->GetMasterVolumeLevelScalar(&pctMaster);
-			if (FAILED(hr)) {
-				LOG(L"IAudioEndpointVolume::GetMasterVolumeLevelScalar failed: hr = 0x%08x", hr);
-				continue;
-			}
-
-			float dbMaster;
-			hr = pAudioEndpointVolume->GetMasterVolumeLevel(&dbMaster);
-			if (FAILED(hr)) {
-				LOG(L"IAudioEndpointVolume::GetMasterVolumeLevel failed: hr = 0x%08x", hr);
-				continue;
-			}
-			if (StrCmpW(v.pwszVal, L"Speakers (SB Audigy)"))
-				continue;
-
-			LOG(
-				L"%s\n"
-				L"    Peak: %g\n"
-				L"    Mute: %d\n"
-				L"    Master: %g%% (%g dB)",
-				v.pwszVal,
-				peak_endpoint,
-				mute,
-				pctMaster * 100.0f, dbMaster
-			);
-
-			// get a session enumerator
-			CComPtr<IAudioSessionManager2> pAudioSessionManager2;
-			hr = pMMDevice->Activate(
-				__uuidof(IAudioSessionManager2),
-				CLSCTX_ALL,
-				nullptr,
-				reinterpret_cast<void **>(&pAudioSessionManager2)
-			);
-			if (FAILED(hr)) {
-				LOG(L"IMMDevice::Activate(IAudioSessionManager2) failed: hr = 0x%08x", hr);
+				LOG(L"IAudioSessionEnumerator::GetSession() failed: hr = 0x%08x", hr);
 				return -__LINE__;
 			}
-			_pAudioSessionManager2 = pAudioSessionManager2;
+		}
 
-			CComPtr<IAudioSessionEnumerator> pAudioSessionEnumerator;
-			hr = pAudioSessionManager2->GetSessionEnumerator(&pAudioSessionEnumerator);
-			if (FAILED(hr)) {
-				LOG(L"IAudioSessionManager2::GetSessionEnumerator() failed: hr = 0x%08x", hr);
-				return -__LINE__;
-			}
-			_pAudioSessionEnumerator = pAudioSessionEnumerator;
-
-			// iterate over all the sessions
-			int count = 0;
-			hr = pAudioSessionEnumerator->GetCount(&count);
-			if (FAILED(hr)) {
-				LOG(L"IAudioSessionEnumerator::GetCount() failed: hr = 0x%08x", hr);
-				return -__LINE__;
-			}
-
-			for (int session = 0; session < count; session++) {
-				// get the session identifier
-				CComPtr<IAudioSessionControl> pAudioSessionControl;
-				hr = pAudioSessionEnumerator->GetSession(session, &pAudioSessionControl);
-				if (FAILED(hr)) {
-					LOG(L"IAudioSessionEnumerator::GetSession() failed: hr = 0x%08x", hr);
-					return -__LINE__;
-				}
-			}
-
-			return hr;
-		} // device
+		return hr;
 	}
 	return hr;
 }
@@ -535,18 +537,22 @@ HRESULT Spotify::GetSpotifyAudioSession()
 
 void Spotify::Mute()
 {
+	if (!_pSpotifySimpleAudioVolume)
+		return;
 	_pSpotifySimpleAudioVolume->SetMute(TRUE, NULL);
 }
 
 void Spotify::Unmute()
 {
+	if (!_pSpotifySimpleAudioVolume)
+		return;
 	_pSpotifySimpleAudioVolume->SetMute(FALSE, NULL);
 }
 
 float Spotify::DoesProduceSound()
 {
 	float peak_session = 0.0f;
-	if (_pAudioMeterInformation_Session == NULL) {
+	if (_pAudioMeterInformation_Session == NULL || _pSpotifySimpleAudioVolume == NULL) {
 		//try to get the session
 		HRESULT hr = S_OK;
 		hr = GetSpotifyAudioSession();
