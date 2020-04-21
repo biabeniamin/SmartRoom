@@ -172,6 +172,11 @@ url = hostLocal;
   url += String(getHumidity());
   httpGetRequest(url, host2);
 
+  delay(2000);
+  url = host;
+  url += String(getTemperature());
+  httpGetRequest(url, host2);
+
 
 
 
