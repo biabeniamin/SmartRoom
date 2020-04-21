@@ -7,8 +7,9 @@
 */
 
 #include <ESP8266WiFi.h>
-
-
+#include <WiFiClient.h>
+#include <ESP8266WebServer.h>
+#include <ESP8266mDNS.h>
 
 #include <SHT1x.h>
 
@@ -22,6 +23,8 @@ SHT1x sht1x(dataPin, clockPin);
 const char* ssid     = "Bia";
 const char* password = "";
 
+
+//temp monitoring
 const char* host = "http://iot.robofun.ro/api/v1/senzor/n8senu1r8l6h7r649ni947fqke/input?value=";
 const char* host3 = "http://iot.robofun.ro/api/v1/senzor/pabu0lk5otg49jcpmko9j3tj0k/input?value=";
 const char* host2 = "iot.robofun.ro";
@@ -29,6 +32,26 @@ const char* hostLocal = "http://192.168.0.108/recordTemperature.php?humidity=";
 const char* hostLocal2 = "192.168.0.108";
 const char* streamId   = "....................";
 const char* privateKey = "....................";
+
+
+//webserver
+ESP8266WebServer server(80);
+
+const int led = 13;
+const int red = 3;
+const int blue = 1;
+const int green = 2;
+
+void handleRoot() {
+  digitalWrite(led, 1);
+  server.send(200, "text/plain", "hello from esp8266!");
+  if (server.hasArg("strip")) {
+    Serial.print("Found strip: ");
+    String cookie = server.arg("strip");
+    Serial.println(cookie);
+  }
+  digitalWrite(led, 0);
+}
 
 float getTemperature()
 {
@@ -102,6 +125,19 @@ void setup() {
   Serial.println("WiFi connected");
   Serial.println("IP address: ");
   Serial.println(WiFi.localIP());
+
+  //webserver
+  pinMode(led, OUTPUT);
+  digitalWrite(led, 0);
+
+  if (MDNS.begin("esp8266")) {
+    Serial.println("MDNS responder started");
+  }
+
+  server.on("/", handleRoot);  
+
+  server.begin();
+  Serial.println("HTTP server started");
 }
 
 int value = 0;
@@ -146,7 +182,7 @@ void httpGetRequest(String url, String hostX)
 }
 
 void loop() {
-
+  server.handleClient();
   ++value;
 
 
