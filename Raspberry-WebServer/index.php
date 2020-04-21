@@ -209,7 +209,16 @@ if(isset($_GET["cmd"]))
 		<a href="index.php"><Button class="button">Refresh</Button></a><br>
 		<a href="?cmd=plus"><Button class="button">+</Button></a>
 		<a href="?cmd=minus"><Button class="button">-</Button></a><br>
-		
+		<!--light -->	
+		<a href="http://192.168.0.162/?strip=0"><Button class="button">Turn off</Button></a>
+		<a href="http://192.168.0.162/?strip=1"><Button class="button">Blue</Button></a>
+		<a href="http://192.168.0.162/?strip=2"><Button class="button">Green</Button></a>
+		<a href="http://192.168.0.162/?strip=3"><Button class="button">BlueGreen</Button></a>
+		<a href="http://192.168.0.162/?strip=4"><Button class="button">Red</Button></a>
+		<a href="http://192.168.0.162/?strip=5"><Button class="button">Red-Blue</Button></a>
+		<a href="http://192.168.0.162/?strip=6"><Button class="button">Red-Green</Button></a>
+		<a href="http://192.168.0.162/?strip=7"><Button class="button">White</Button></a>
+		<br>
 		<?php
 
 			$thresholdTemperature=readAllFile("roomStatus/thresholdTemperature");
