@@ -181,8 +181,11 @@ void httpGetRequest(String url, String hostX)
   Serial.println("closing connection");
 }
 
+unsigned long last;
 void loop() {
   server.handleClient();
+  if(millis() - last < 30000)
+    return;
   ++value;
 
 
@@ -196,28 +199,14 @@ void loop() {
   httpGetRequest(url, hostLocal2);
   Serial.println(String(getTemperature()));
 
-
-
-
-url = hostLocal;
-  url += String(getHumidity());
-  httpGetRequest(url, host2);
-
-  delay(5000);
   url = host3;
   url += String(getHumidity());
   httpGetRequest(url, host2);
 
-  delay(2000);
   url = host;
   url += String(getTemperature());
   httpGetRequest(url, host2);
 
-
-
-
-
-
-  delay(120000);
+  last = millis();
 }
 
